@@ -702,7 +702,10 @@ const ChiaaScrapbook: React.FC<AlertProps> = ({ donation }) => {
   }, [phase]);
 
   const badge = kindLabel(donation);
-  const mediaUrl = donation.media_url;
+  
+  // FIX: Coerce null to undefined to satisfy <img> and <video> src prop types
+  const mediaUrl = donation.media_url ?? undefined;
+  
   const isVideo = (donation.media_type || '').toLowerCase().includes('video');
   const showMedia = Boolean(mediaUrl);
 
