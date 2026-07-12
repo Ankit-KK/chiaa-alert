@@ -713,18 +713,18 @@ const ChiaaScrapbook: React.FC<AlertProps> = ({ donation }) => {
         <span
           key={i}
           className="digit"
-          style={{ animationDelay: \`\${2.5 + i * 0.06}s\` }}
+          style={{ animationDelay: `${2.5 + i * 0.06}s` }}
         >
-          {ch === ' ' ? '\\u00A0' : ch}
+          {ch === ' ' ? '\u00A0' : ch}
         </span>
       )),
     [amountStr]
   );
 
-  const rootClass = \`chiaa \${phase}\`;
+  const rootClass = `chiaa ${phase}`;
 
-  // Use a placeholder image if no logo is available
-  const logoUrl = "https://images.unsplash.com/photo-1610824352934-c10d87b4550d?w=200&h=200&fit=crop";
+  // Local logo from public folder
+  const logoUrl = "/Chiaa_YT_PROFILE_FINAL_1.png";
 
   return (
     <div className={rootClass}>
