@@ -55,7 +55,7 @@ const CSS = `
   --c-deep-rose:   #C45B6F;
   --c-ink:         #5E2A36;
   --c-tape:        rgba(255, 205, 216, 0.55);
-  --c-shadow:      rgba(139, 69, 87, 0.12);
+  --c-shadow:      rgba(139, 69, 87, 0.15);
 
   --font-script:   'Caveat', cursive;
   --font-serif:    'Cormorant Garamond', 'Playfair Display', serif;
@@ -90,7 +90,7 @@ const CSS = `
   background: radial-gradient(ellipse at 30% 30%, #FFE4EC 0%, var(--c-petal) 55%, var(--c-cherry) 100%);
   border-radius: 60% 10% 60% 10%;
   opacity: 0;
-  filter: drop-shadow(0 1px 2px rgba(196, 91, 111, 0.25));
+  filter: drop-shadow(0 2px 4px rgba(196, 91, 111, 0.3));
   transform-origin: center;
 }
 
@@ -111,9 +111,9 @@ const CSS = `
 
 @keyframes caPetalFall {
   0%   { transform: translate(0, 0) rotate(0deg);            opacity: 0; }
-  8%   { opacity: 0.9; }
-  50%  { transform: translate(40px, 400px) rotate(220deg);   opacity: 0.85; }
-  92%  { opacity: 0.6; }
+  8%   { opacity: 0.95; }
+  50%  { transform: translate(40px, 400px) rotate(220deg);   opacity: 0.9; }
+  92%  { opacity: 0.7; }
   100% { transform: translate(-20px, 900px) rotate(540deg);  opacity: 0; }
 }
 
@@ -134,7 +134,7 @@ const CSS = `
   height: 300px;
   border-radius: 10px;
   background: var(--c-paper);
-  box-shadow: 0 6px 24px var(--c-shadow);
+  box-shadow: 0 8px 32px var(--c-shadow);
   transform: translateX(-50%);
   opacity: 0;
 }
@@ -145,8 +145,8 @@ const CSS = `
   inset: 0;
   border-radius: inherit;
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(232,180,188,0.06) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(255,183,197,0.05) 0%, transparent 45%);
+    radial-gradient(circle at 20% 30%, rgba(232,180,188,0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,183,197,0.06) 0%, transparent 45%);
   pointer-events: none;
 }
 
@@ -208,17 +208,17 @@ const CSS = `
       to bottom,
       transparent 0px,
       transparent 33px,
-      rgba(232, 180, 188, 0.10) 33px,
-      rgba(232, 180, 188, 0.10) 34px
+      rgba(232, 180, 188, 0.12) 33px,
+      rgba(232, 180, 188, 0.12) 34px
     ),
-    linear-gradient(135deg, rgba(255, 253, 247, 0.96) 0%, rgba(255, 248, 240, 0.94) 100%);
+    linear-gradient(135deg, rgba(255, 253, 247, 0.98) 0%, rgba(255, 248, 240, 0.96) 100%);
   backdrop-filter: blur(14px) saturate(1.2);
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
 
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.7) inset,
-    0 -1px 0 rgba(139,69,87,0.05) inset,
-    0 20px 50px -12px rgba(139, 69, 87, 0.22);
+    0 1px 0 rgba(255,255,255,0.8) inset,
+    0 -1px 0 rgba(139,69,87,0.06) inset,
+    0 24px 60px -12px rgba(139, 69, 87, 0.25);
 
   opacity: 0;
   display: flex;
@@ -239,7 +239,7 @@ const CSS = `
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 40%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 40%);
   pointer-events: none;
 }
 
@@ -253,8 +253,8 @@ const CSS = `
   padding: 10px 10px 34px;
   border-radius: 3px;
   box-shadow:
-    0 2px 4px rgba(139,69,87,0.08),
-    0 14px 30px -6px rgba(139, 69, 87, 0.28);
+    0 2px 4px rgba(139,69,87,0.1),
+    0 16px 40px -6px rgba(139, 69, 87, 0.3);
   transform: translateY(-50%) rotate(-5deg);
   opacity: 0;
   z-index: 6;
@@ -274,7 +274,7 @@ const CSS = `
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: saturate(1.05) contrast(1.02);
+  filter: saturate(1.08) contrast(1.03);
 }
 
 .chiaa-polaroid-caption {
@@ -322,9 +322,9 @@ const CSS = `
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #FF8A9C 0%, #E74C6F 45%, #B33050 100%);
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.35),
-    inset 0 -2px 3px rgba(0,0,0,0.25),
-    inset 0 2px 2px rgba(255,255,255,0.4);
+    0 2px 6px rgba(0,0,0,0.4),
+    inset 0 -2px 3px rgba(0,0,0,0.3),
+    inset 0 2px 2px rgba(255,255,255,0.5);
 }
 .chiaa-pin::after {
   content: '';
@@ -334,7 +334,7 @@ const CSS = `
   width: 16px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(139, 69, 87, 0.25);
+  background: rgba(139, 69, 87, 0.3);
   filter: blur(2px);
 }
 
@@ -365,7 +365,7 @@ const CSS = `
   position: relative;
   display: inline-block;
   clip-path: inset(0 100% 0 0);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 }
 .chiaa-name::after {
   content: '';
@@ -421,11 +421,11 @@ const CSS = `
   content: '';
   position: absolute;
   inset: -10px -18px;
-  background: radial-gradient(ellipse at center, rgba(255,183,197,0.45) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(255,183,197,0.5) 0%, transparent 70%);
   border-radius: 50%;
   opacity: 0;
   z-index: -1;
-  filter: blur(8px);
+  filter: blur(10px);
 }
 .chiaa.entering .chiaa-amount::before { animation: caBloom 1s ease-out 3.1s forwards; }
 
@@ -435,7 +435,7 @@ const CSS = `
 @keyframes caBloom {
   0%   { opacity: 0; transform: scale(0.6); }
   60%  { opacity: 1; }
-  100% { opacity: 0.75; transform: scale(1); }
+  100% { opacity: 0.8; transform: scale(1); }
 }
 
 .chiaa-badge {
@@ -451,14 +451,14 @@ const CSS = `
   background:
     repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.35) 0px,
-      rgba(255,255,255,0.35) 3px,
+      rgba(255,255,255,0.4) 0px,
+      rgba(255,255,255,0.4) 3px,
       transparent 3px,
       transparent 7px
     ),
-    linear-gradient(135deg, rgba(255, 205, 216, 0.75), rgba(255, 183, 197, 0.75));
+    linear-gradient(135deg, rgba(255, 205, 216, 0.8), rgba(255, 183, 197, 0.8));
   border-radius: 1px;
-  box-shadow: 0 1px 2px rgba(139,69,87,0.12);
+  box-shadow: 0 2px 4px rgba(139,69,87,0.15);
   clip-path: polygon(
     0% 10%, 3% 0%, 8% 12%, 14% 2%, 20% 10%, 28% 0%, 35% 8%, 42% 0%, 50% 10%, 58% 0%,
     65% 8%, 72% 0%, 80% 10%, 88% 2%, 94% 12%, 100% 0%,
@@ -493,7 +493,7 @@ const CSS = `
   top: 0;
   bottom: 0;
   width: 1.5px;
-  background: rgba(196, 91, 111, 0.35);
+  background: rgba(196, 91, 111, 0.4);
 }
 
 .chiaa.entering .chiaa-message { animation: caMessageIn 0.9s ease-out 3.2s forwards; }
@@ -552,7 +552,7 @@ const CSS = `
   content: '';
   position: absolute;
   background: #FFF6A8;
-  box-shadow: 0 0 6px #FFE08A;
+  box-shadow: 0 0 8px #FFE08A;
   border-radius: 1px;
 }
 .chiaa-sparkle::before { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
@@ -589,8 +589,8 @@ const CSS = `
   padding: 14px 14px 56px;
   border-radius: 3px;
   box-shadow:
-    0 2px 4px rgba(139,69,87,0.08),
-    0 20px 50px -10px rgba(139, 69, 87, 0.30);
+    0 2px 4px rgba(139,69,87,0.1),
+    0 24px 60px -10px rgba(139, 69, 87, 0.32);
 }
 
 .chiaa-media-inner {
@@ -702,10 +702,7 @@ const ChiaaScrapbook: React.FC<AlertProps> = ({ donation }) => {
   }, [phase]);
 
   const badge = kindLabel(donation);
-  
-  // FIX: Coerce null to undefined to satisfy <img> and <video> src prop types
   const mediaUrl = donation.media_url ?? undefined;
-  
   const isVideo = (donation.media_type || '').toLowerCase().includes('video');
   const showMedia = Boolean(mediaUrl);
 
@@ -725,8 +722,6 @@ const ChiaaScrapbook: React.FC<AlertProps> = ({ donation }) => {
   );
 
   const rootClass = `chiaa ${phase}`;
-
-  // Local logo from public folder
   const logoUrl = "/Chiaa_YT_PROFILE_FINAL_1.png";
 
   return (
