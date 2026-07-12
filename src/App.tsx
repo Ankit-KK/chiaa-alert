@@ -71,6 +71,9 @@ function App() {
     <div className="app">
       <div className="controls">
         <h1>Chiaa Scrapbook Alert Demo</h1>
+        <p style={{ marginBottom: '16px', color: '#666', fontSize: '14px' }}>
+          The alert below has a transparent background for streaming overlays
+        </p>
         <button onClick={handleNextDonation}>Test Next Donation</button>
         <button onClick={() => setShowAlert(!showAlert)}>
           {showAlert ? 'Hide' : 'Show'} Alert
