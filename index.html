@@ -525,18 +525,19 @@
       35%      { opacity: 0.6; transform: scale(0.9) rotate(45deg); }
       55%      { opacity: 0; transform: scale(0.4) rotate(60deg); }
     }
+    
 
     /* ============================================================
        MEDIA POLAROID (below)
        ============================================================ */
     .chiaa-media-wrap {
-      position: absolute;
-      bottom: 0;
+      osition: absolute;
+      top: 200px;  /* Changed from bottom: 0 to top positioning */
       left: 50%;
       width: 420px;
       transform: translateX(-50%) translateY(30px);
       opacity: 0;
-      z-index: 3;
+      z-index: 5;  /* Increased z-index to appear above papers */
       background: #FFFDF8;
       padding: 10px 10px 40px;
       border-radius: 3px;
@@ -544,6 +545,7 @@
         0 2px 3px rgba(139,69,87,0.1),
         0 16px 40px -8px rgba(139, 69, 87, 0.3);
     }
+    
     .chiaa-media-inner {
       width: 100%;
       height: 220px;
@@ -590,6 +592,9 @@
     .chiaa.exiting .chiaa-card,
     .chiaa.exiting .chiaa-paper      { animation: caFoldExit 0.7s ease-in 0.3s forwards; }
     .chiaa.exiting .chiaa-media-wrap { animation: caMediaExit 0.6s ease-in 0.2s forwards; }
+    @keyframes caMediaExit {
+      to { opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.94); }
+    }
     .chiaa.exiting .chiaa-petals     { animation: caPetalsExit 1s ease-in forwards; }
 
     @keyframes caPinExit      { to { opacity: 0; transform: translateY(-20px) scale(0.6); } }
