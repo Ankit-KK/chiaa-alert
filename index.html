@@ -1,787 +1,588 @@
 <!doctype html>
 <html lang="en">
+has
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chiaa Scrapbook Alert</title>
+  <title>Latifa Command Center Alert</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       GLOBAL — transparent for streaming overlay
+       GLOBAL — Transparent for OBS
        ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background: transparent !important;
       overflow: hidden;
-      font-family: 'Kalam', cursive;
+      font-family: 'Exo 2', sans-serif;
     }
-
     #root {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
       background: transparent;
     }
 
-    /* Demo controls */
+    /* Demo Controls (visible only with ?demo=1) */
     .demo-controls {
-      display: none;
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 9999;
-      background: rgba(255, 253, 247, 0.96);
-      padding: 14px 18px;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(139, 69, 87, 0.18);
-      font-family: system-ui, sans-serif;
-      font-size: 13px;
-      color: #5E2A36;
+      display: none; position: fixed; top: 16px; left: 16px; z-index: 9999;
+      background: rgba(10, 10, 15, 0.9); border: 1px solid #8A2BE2;
+      padding: 14px 18px; border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #fff;
     }
     .demo-controls.visible { display: block; }
-    .demo-controls h3 { font-size: 14px; margin-bottom: 10px; font-weight: 700; }
+    .demo-controls h3 { font-family: 'Orbitron', sans-serif; font-size: 14px; margin-bottom: 10px; color: #00FFFF; text-transform: uppercase; letter-spacing: 1px; }
     .demo-controls button {
-      background: linear-gradient(135deg, #E8B4BC, #C45B6F);
-      color: white;
-      border: none;
-      padding: 7px 14px;
-      margin: 3px 4px 3px 0;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
+      background: linear-gradient(90deg, #8A2BE2, #FF007F);
+      color: white; border: none; padding: 6px 12px; margin: 3px 4px 3px 0;
+      border-radius: 2px; font-family: 'Rajdhani', sans-serif; font-weight: 700;
+      cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
     }
-    .demo-controls button:hover { filter: brightness(1.05); }
+    .demo-controls button:hover { filter: brightness(1.2); }
 
     /* ============================================================
        TOKENS
        ============================================================ */
-    .chiaa {
-      --c-blush:       #FADADD;
-      --c-rose:        #E8B4BC;
-      --c-cherry:      #FFB7C5;
-      --c-petal:       #FFC4D6;
-      --c-cream:       #FFF8F0;
-      --c-ivory:       #F5E6D3;
-      --c-paper:       #FFFDF7;
-      --c-burgundy:    #8B4557;
-      --c-deep-rose:   #C45B6F;
-      --c-ink:         #5E2A36;
-
-      --font-script:   'Caveat', cursive;
-      --font-serif:    'Cormorant Garamond', serif;
-      --font-hand:     'Kalam', cursive;
-      --font-label:    'Patrick Hand', cursive;
+    .latifa-alert {
+      --c-purple: #8A2BE2;
+      --c-pink: #FF007F;
+      --c-cyan: #00FFFF;
+      --c-dark: #0A0A0F;
+      --c-graphite: #1A1A24;
+      --c-glass: rgba(20, 20, 30, 0.65);
+      --c-glass-border: rgba(138, 43, 226, 0.4);
+      --c-text: #FFFFFF;
+      --c-text-dim: #A0A0B0;
 
       position: relative;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
       pointer-events: none;
-      color: var(--c-ink);
+      width: 560px;
     }
-    .chiaa *, .chiaa *::before, .chiaa *::after { box-sizing: border-box; }
 
     /* ============================================================
-       PETALS
+       SCANLINE OVERLAY
        ============================================================ */
-    .chiaa-petals {
-      position: absolute;
-      inset: -60px;
-      pointer-events: none;
-      z-index: 1;
-      overflow: visible;
-    }
-    .chiaa-petal {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: radial-gradient(ellipse at 30% 30%, #FFE4EC 0%, var(--c-petal) 55%, var(--c-cherry) 100%);
-      border-radius: 60% 10% 60% 10%;
+    .scanline-overlay {
+      position: absolute; inset: -50px; z-index: 50; pointer-events: none;
+      background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 255, 0.03) 51%, transparent 52%);
+      background-size: 100% 4px;
       opacity: 0;
-      filter: drop-shadow(0 1px 2px rgba(196, 91, 111, 0.3));
     }
-    .chiaa.entering .chiaa-petal { animation: caPetalFall linear infinite; }
+    .latifa-alert.entering .scanline-overlay { animation: scanlineSweep 1.5s ease-out 0.2s forwards; }
+    .latifa-alert.idle .scanline-overlay { animation: scanlineIdle 6s linear infinite; }
+    .latifa-alert.exiting .scanline-overlay { animation: scanlineSweep 0.8s ease-in forwards; }
 
-    .chiaa-petal:nth-child(1)  { left:  8%; top:-15px; animation-duration: 9s;  animation-delay: 0.0s; width:9px;  height:9px; }
-    .chiaa-petal:nth-child(2)  { left: 24%; top:-15px; animation-duration:11s;  animation-delay: 1.2s; width:12px; height:12px; }
-    .chiaa-petal:nth-child(3)  { left: 40%; top:-15px; animation-duration: 8s;  animation-delay: 0.5s; }
-    .chiaa-petal:nth-child(4)  { left: 54%; top:-15px; animation-duration:12s;  animation-delay: 2.0s; width:8px;  height:8px; }
-    .chiaa-petal:nth-child(5)  { left: 68%; top:-15px; animation-duration:10s;  animation-delay: 0.8s; width:13px; height:13px; }
-    .chiaa-petal:nth-child(6)  { left: 82%; top:-15px; animation-duration: 9s;  animation-delay: 1.6s; }
-    .chiaa-petal:nth-child(7)  { left: 94%; top:-15px; animation-duration:13s;  animation-delay: 2.4s; width:9px;  height:9px; }
-    .chiaa-petal:nth-child(8)  { left: 16%; top:-15px; animation-duration:10s;  animation-delay: 3.0s; width:11px; height:11px; }
-
-    @keyframes caPetalFall {
-      0%   { transform: translate(0, 0) rotate(0deg);           opacity: 0; }
-      8%   { opacity: 0.95; }
-      50%  { transform: translate(30px, 300px) rotate(220deg);  opacity: 0.9; }
-      92%  { opacity: 0.6; }
-      100% { transform: translate(-15px, 700px) rotate(540deg); opacity: 0; }
+    @keyframes scanlineSweep {
+      0% { transform: translateY(-100%); opacity: 1; }
+      100% { transform: translateY(100%); opacity: 0; }
+    }
+    @keyframes scanlineIdle {
+      0% { transform: translateY(-100%); opacity: 0.5; }
+      100% { transform: translateY(100%); opacity: 0.5; }
     }
 
     /* ============================================================
-       STAGE
+       COMMAND PANEL
        ============================================================ */
-    .chiaa-stage {
+    .command-panel {
       position: relative;
-      width: 520px;
-      padding-bottom: 280px;
-    }
-
-    .chiaa-paper {
-      position: absolute;
-      left: 50%;
-      top: 0;
-      height: 180px;
-      border-radius: 8px;
-      background: var(--c-paper);
-      box-shadow: 0 4px 16px rgba(139, 69, 87, 0.14);
-      transform: translateX(-50%);
+      width: 560px;
+      height: 160px;
+      background: linear-gradient(135deg, var(--c-glass) 0%, rgba(10, 10, 15, 0.85) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      /* Tactical angled cut on bottom right */
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%);
+      border: 1px solid var(--c-glass-border);
+      box-shadow: 0 0 20px rgba(138, 43, 226, 0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+      display: flex;
+      padding: 20px 24px 20px 120px; /* Left padding for hex avatar */
+      gap: 16px;
       opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      z-index: 10;
     }
-    .chiaa-paper::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background-image:
-        radial-gradient(circle at 20% 30%, rgba(232,180,188,0.07) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255,183,197,0.05) 0%, transparent 45%);
-      pointer-events: none;
+    .latifa-alert.entering .command-panel { animation: panelAssemble 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards; }
+    .latifa-alert.exiting .command-panel { animation: panelDissolve 0.6s ease-in forwards; }
+
+    @keyframes panelAssemble {
+      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .chiaa-paper-3 { width: 490px; height: 165px; transform: translateX(calc(-50% + 4px)) translateY(10px) rotate(1.6deg); background: #FDF1F3; z-index: 1; }
-    .chiaa-paper-2 { width: 505px; height: 172px; transform: translateX(calc(-50% - 3px)) translateY(5px)  rotate(-0.9deg); background: #FEF6F2; z-index: 2; }
-    .chiaa-paper-1 { width: 520px; z-index: 3; }
+    @keyframes panelDissolve {
+      0% { opacity: 1; transform: scale(1); filter: blur(0); }
+      100% { opacity: 0; transform: scale(1.05); filter: blur(8px); }
+    }
 
-    .chiaa.entering .chiaa-paper-3 { animation: caPaper3 0.8s cubic-bezier(0.22,1,0.36,1) 0.20s forwards; }
-    .chiaa.entering .chiaa-paper-2 { animation: caPaper2 0.8s cubic-bezier(0.22,1,0.36,1) 0.32s forwards; }
-    .chiaa.entering .chiaa-paper-1 { animation: caPaper1 0.8s cubic-bezier(0.22,1,0.36,1) 0.44s forwards; }
-
-    @keyframes caPaper3 { 0% { opacity:0; transform: translateX(calc(-50% + 4px)) translateY(24px) rotate(0) scale(0.92); } 100% { opacity:1; transform: translateX(calc(-50% + 4px)) translateY(10px) rotate(1.6deg) scale(1); } }
-    @keyframes caPaper2 { 0% { opacity:0; transform: translateX(calc(-50% - 3px)) translateY(24px) rotate(0) scale(0.92); } 100% { opacity:1; transform: translateX(calc(-50% - 3px)) translateY(5px)  rotate(-0.9deg) scale(1); } }
-    @keyframes caPaper1 { 0% { opacity:0; transform: translateX(-50%) translateY(24px) scale(0.92); } 100% { opacity:1; transform: translateX(-50%) translateY(0) scale(1); } }
-
-    .chiaa.idle .chiaa-stage { animation: caBreathe 7s ease-in-out infinite; }
-    @keyframes caBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.004); } }
+    /* Illuminated border segments */
+    .command-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--c-cyan), var(--c-purple), var(--c-pink));
+      opacity: 0; transform: scaleX(0); transform-origin: left;
+    }
+    .latifa-alert.entering .command-panel::before { animation: borderDraw 0.6s ease-out 0.8s forwards; }
+    @keyframes borderDraw { to { opacity: 1; transform: scaleX(1); } }
 
     /* ============================================================
-       MAIN CARD
+       HEXAGONAL AVATAR
        ============================================================ */
-    .chiaa-card {
+    .hex-avatar-wrapper {
       position: absolute;
-      left: 50%;
-      top: 0;
-      width: 520px;
-      height: 180px;
-      transform: translateX(-50%);
-      z-index: 4;
-      border-radius: 10px;
-      padding: 20px 24px 20px 110px;
-
-      background:
-        repeating-linear-gradient(to bottom, transparent 0px, transparent 25px, rgba(232,180,188,0.12) 25px, rgba(232,180,188,0.12) 26px),
-        linear-gradient(135deg, rgba(255,253,247,0.98) 0%, rgba(255,248,240,0.97) 100%);
-      backdrop-filter: blur(10px) saturate(1.2);
-      -webkit-backdrop-filter: blur(10px) saturate(1.2);
-
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.8) inset,
-        0 -1px 0 rgba(139,69,87,0.05) inset,
-        0 14px 36px -8px rgba(139, 69, 87, 0.22);
-
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 76px;
+      height: 84px;
+      z-index: 12;
       opacity: 0;
+    }
+    .latifa-alert.entering .hex-avatar-wrapper { animation: avatarLock 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards; }
+    @keyframes avatarLock {
+      0% { opacity: 0; transform: translateY(-50%) scale(0.5) rotate(-30deg); }
+      100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0deg); }
+    }
+
+    .hex-ring {
+      position: absolute; inset: -4px;
+      background: conic-gradient(from 0deg, transparent 0%, var(--c-cyan) 25%, var(--c-pink) 50%, transparent 75%);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: rotateRing 6s linear infinite;
+      filter: blur(2px);
+    }
+    .latifa-alert.idle .hex-ring { animation: rotateRing 6s linear infinite, breatheGlow 3s ease-in-out infinite; }
+    @keyframes rotateRing { to { transform: rotate(360deg); } }
+    @keyframes breatheGlow { 0%, 100% { filter: blur(2px) brightness(1); } 50% { filter: blur(4px) brightness(1.3); } }
+
+    .hex-inner {
+      position: absolute; inset: 2px;
+      background: var(--c-dark);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hex-inner img {
+      width: 110%; height: 110%; object-fit: cover;
+      /* Counter-rotate slightly if needed, but cover handles it */
+    }
+
+    /* ============================================================
+       INFO BLOCK
+       ============================================================ */
+    .info-block {
+      flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
-    }
-    .chiaa.entering .chiaa-card { animation: caCardOpen 0.9s cubic-bezier(0.22,1,0.36,1) 0.55s forwards; }
-    @keyframes caCardOpen {
-      0%   { opacity: 0; transform: translateX(-50%) scale(0.92); }
-      60%  { opacity: 1; }
-      100% { opacity: 1; transform: translateX(-50%) scale(1); }
-    }
-    .chiaa-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 40%);
-      pointer-events: none;
-    }
-
-    /* ============================================================
-       CORNER CHERRY BLOSSOMS (Soft Watercolor Flourishes)
-       ============================================================ */
-    .chiaa-corner-pos {
-      position: absolute;
-      pointer-events: none;
-      z-index: 5;
-      overflow: hidden;
-    }
-    /* Positioned slightly off the corners for a natural, tucked-in look */
-    .chiaa-corner-tl { top: -25px; left: -25px; width: 130px; height: 130px; transform: rotate(-10deg); }
-    .chiaa-corner-tr { top: -20px; right: -20px; width: 120px; height: 120px; transform: rotate(15deg) scaleX(-1); }
-    .chiaa-corner-bl { bottom: -25px; left: -20px; width: 125px; height: 125px; transform: rotate(-15deg) scaleY(-1); }
-    .chiaa-corner-br { bottom: -20px; right: -25px; width: 110px; height: 110px; transform: rotate(10deg) scale(-1, -1); }
-
-    .chiaa-corner-anim {
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transform: scale(0.5);
-    }
-    .chiaa.entering .chiaa-corner-anim { animation: caCornerIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-    .chiaa-corner-tl .chiaa-corner-anim { animation-delay: 1.2s; }
-    .chiaa-corner-tr .chiaa-corner-anim { animation-delay: 1.3s; }
-    .chiaa-corner-bl .chiaa-corner-anim { animation-delay: 1.4s; }
-    .chiaa-corner-br .chiaa-corner-anim { animation-delay: 1.5s; }
-
-    @keyframes caCornerIn {
-      0% { opacity: 0; transform: scale(0.5); }
-      100% { opacity: 0.85; transform: scale(1); }
-    }
-
-    .chiaa-corner-inner {
-      width: 100%;
-      height: 100%;
-      /* Soft radial fade to blend into the paper like watercolor */
-      -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 20%, transparent 75%);
-      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 20%, transparent 75%);
-      /* Slight vintage tint to match the scrapbook vibe */
-      filter: sepia(0.15) saturate(1.2) contrast(0.95);
-    }
-    .chiaa-corner-inner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* ============================================================
-       POLAROID AVATAR
-       ============================================================ */
-    .chiaa-polaroid {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      width: 82px;
-      background: #FFFDF8;
-      padding: 6px 6px 20px;
-      border-radius: 2px;
-      box-shadow:
-        0 2px 3px rgba(139,69,87,0.1),
-        0 10px 24px -4px rgba(139, 69, 87, 0.28);
-      transform: translateY(-50%) rotate(-5deg);
-      opacity: 0;
-      z-index: 6;
-    }
-    .chiaa-polaroid-inner {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: linear-gradient(135deg, var(--c-blush), var(--c-rose));
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .chiaa-polaroid-inner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      filter: saturate(1.08) contrast(1.03);
-    }
-    .chiaa-polaroid-caption {
-      position: absolute;
-      bottom: 3px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-family: var(--font-script);
-      font-size: 13px;
-      color: var(--c-burgundy);
-    }
-
-    .chiaa.entering .chiaa-polaroid { animation: caPolaroidDrop 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.9s forwards; }
-    @keyframes caPolaroidDrop {
-      0%   { opacity: 0; transform: translateY(-120%) rotate(-14deg); }
-      60%  { opacity: 1; transform: translateY(-48%) rotate(-3deg); }
-      80%  { transform: translateY(-52%) rotate(-6deg); }
-      100% { opacity: 1; transform: translateY(-50%) rotate(-5deg); }
-    }
-    .chiaa.idle .chiaa-polaroid { animation: caSway 5s ease-in-out infinite; }
-    @keyframes caSway {
-      0%,100% { transform: translateY(-50%) rotate(-5deg); }
-      50%     { transform: translateY(-50%) rotate(-3.5deg); }
-    }
-
-    /* ============================================================
-       PUSHPIN
-       ============================================================ */
-    .chiaa-pin {
-      position: absolute;
-      left: 48px;
-      top: 10px;
-      width: 14px;
-      height: 14px;
-      z-index: 8;
-      opacity: 0;
-    }
-    .chiaa-pin::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #FF8A9C 0%, #E74C6F 45%, #B33050 100%);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 -1px 2px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.5);
-    }
-    .chiaa-pin::after {
-      content: '';
-      position: absolute;
-      left: 2px;
-      top: 14px;
-      width: 10px;
-      height: 3px;
-      border-radius: 50%;
-      background: rgba(139, 69, 87, 0.3);
-      filter: blur(1.5px);
-    }
-    .chiaa.entering .chiaa-pin { animation: caPinDrop 0.45s cubic-bezier(0.34,1.56,0.64,1) 1.3s forwards; }
-    @keyframes caPinDrop {
-      0%   { opacity: 0; transform: translateY(-20px) scale(0.6); }
-      70%  { opacity: 1; transform: translateY(1px) scale(1.05); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    /* ============================================================
-       CONTENT
-       ============================================================ */
-    .chiaa-content {
-      position: relative;
-      z-index: 5;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+      gap: 6px;
       min-width: 0;
     }
 
-    .chiaa-name {
-      font-family: var(--font-script);
-      font-size: 38px;
+    /* Donor Name */
+    .donor-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 26px;
       font-weight: 700;
-      line-height: 1;
-      color: var(--c-burgundy);
-      letter-spacing: 0.3px;
-      position: relative;
-      display: inline-block;
-      clip-path: inset(0 100% 0 0);
-      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    .chiaa-name::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0; bottom: -2px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--c-deep-rose), transparent);
-      border-radius: 2px;
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-    .chiaa.entering .chiaa-name       { animation: caWriteName 0.9s cubic-bezier(0.22,1,0.36,1) 1.5s forwards; }
-    .chiaa.entering .chiaa-name::after{ animation: caUnderline 0.6s ease-out 2.2s forwards; }
-    @keyframes caWriteName { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 0% 0 0); } }
-    @keyframes caUnderline { to { transform: scaleX(1); } }
-
-    .chiaa-amount-row {
+      color: var(--c-text);
+      letter-spacing: 1px;
+      text-transform: uppercase;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 2px;
+      flex-wrap: wrap;
     }
-    .chiaa-amount {
-      font-family: var(--font-serif);
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--c-deep-rose);
-      letter-spacing: 0.8px;
-      line-height: 1;
-      display: inline-flex;
-      position: relative;
-    }
-    .chiaa-amount .digit {
+    .donor-name .char {
       display: inline-block;
       opacity: 0;
-      transform: translateY(4px);
-      filter: blur(2px);
+      transform: translateY(8px);
+      animation: charReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    .chiaa.entering .chiaa-amount .digit { animation: caDigitIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .donor-name .char:last-child {
+      color: var(--c-cyan);
+      text-shadow: 0 0 8px var(--c-cyan);
+      animation: charReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards, cyanPulse 0.5s ease-out 0.3s;
+    }
+    @keyframes charReveal { to { opacity: 1; transform: translateY(0); } }
+    @keyframes cyanPulse { 0% { text-shadow: 0 0 20px var(--c-cyan); } 100% { text-shadow: 0 0 8px var(--c-cyan); } }
 
-    .chiaa-amount::before {
-      content: '';
+    /* Amount Block */
+    .amount-block {
+      position: relative;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .donation-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--c-text);
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+    .amount-bloom {
       position: absolute;
-      inset: -6px -12px;
-      background: radial-gradient(ellipse at center, rgba(255,183,197,0.5) 0%, transparent 70%);
+      inset: -10px -20px;
+      background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.6) 0%, transparent 70%);
       border-radius: 50%;
       opacity: 0;
+      transform: scale(0.5);
       z-index: -1;
-      filter: blur(6px);
+      filter: blur(8px);
     }
-    .chiaa.entering .chiaa-amount::before { animation: caBloom 0.9s ease-out 2.4s forwards; }
-    @keyframes caDigitIn { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
-    @keyframes caBloom   { 0% { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; } 100% { opacity: 0.8; transform: scale(1); } }
+    .latifa-alert.entering .amount-bloom { animation: bloomPulse 0.8s ease-out 1.8s forwards; }
+    @keyframes bloomPulse {
+      0% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.6; transform: scale(1); }
+    }
 
-    .chiaa-badge {
-      font-family: var(--font-label);
+    /* Tactical Type Module */
+    .type-module {
+      font-family: 'Orbitron', sans-serif;
       font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--c-burgundy);
+      font-weight: 700;
+      color: var(--c-cyan);
+      background: rgba(0, 255, 255, 0.08);
+      border: 1px solid rgba(0, 255, 255, 0.3);
       padding: 3px 10px;
-      position: relative;
+      letter-spacing: 2px;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
       opacity: 0;
-      transform: rotate(-2deg) scale(0.8);
-      background:
-        repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0 3px, transparent 3px 7px),
-        linear-gradient(135deg, rgba(255,205,216,0.8), rgba(255,183,197,0.8));
-      border-radius: 1px;
-      box-shadow: 0 1px 3px rgba(139,69,87,0.15);
-      clip-path: polygon(
-        0% 10%, 4% 0%, 10% 12%, 18% 2%, 26% 10%, 36% 0%, 46% 8%, 56% 0%, 66% 10%, 76% 0%,
-        86% 8%, 94% 0%, 100% 10%,
-        100% 90%, 96% 100%, 88% 88%, 80% 100%, 70% 90%, 60% 100%, 50% 92%, 40% 100%, 30% 90%,
-        20% 100%, 10% 92%, 0% 100%
-      );
+      transform: translateX(-10px);
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
     }
-    .chiaa.entering .chiaa-badge { animation: caBadgeStick 0.5s cubic-bezier(0.34,1.56,0.64,1) 2.2s forwards; }
-    @keyframes caBadgeStick {
-      0%   { opacity: 0; transform: rotate(-12deg) scale(0.5) translateY(-8px); }
-      70%  { opacity: 1; transform: rotate(-1deg) scale(1.05); }
-      100% { opacity: 1; transform: rotate(-2deg) scale(1); }
+    .latifa-alert.entering .type-module { animation: modulePowerOn 0.5s ease-out 1.4s forwards; }
+    @keyframes modulePowerOn {
+      0% { opacity: 0; transform: translateX(-10px); filter: brightness(2); }
+      100% { opacity: 1; transform: translateX(0); filter: brightness(1); }
     }
 
-    .chiaa-message {
-      margin-top: 6px;
-      font-family: var(--font-hand);
-      font-size: 14px;
-      line-height: 26px;
-      color: var(--c-ink);
-      padding: 2px 10px 2px 10px;
-      position: relative;
+    /* Message Glass Panel */
+    .message-glass {
+      margin-top: 4px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 15px;
+      color: var(--c-text-dim);
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 2px solid var(--c-pink);
+      padding: 6px 12px;
+      backdrop-filter: blur(4px);
       opacity: 0;
+      transform: translateY(10px);
       max-width: 100%;
       word-wrap: break-word;
     }
-    .chiaa-message::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 1.5px;
-      background: rgba(196, 91, 111, 0.4);
-    }
-    .chiaa.entering .chiaa-message { animation: caMessageIn 0.8s ease-out 2.5s forwards; }
-    @keyframes caMessageIn {
-      0%   { opacity: 0; transform: translateY(6px); filter: blur(2px); }
-      100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+    .latifa-alert.entering .message-glass { animation: glassSlideUp 0.6s ease-out 1.6s forwards; }
+    @keyframes glassSlideUp {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     /* ============================================================
-       DECORATIONS
+       MEDIA SECTION
        ============================================================ */
-    .chiaa-decor {
+    .media-section {
+      position: relative;
+      width: 480px;
+      margin-top: -10px; /* Slight overlap with command panel */
+      z-index: 5;
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    .latifa-alert.entering .media-section { animation: mediaRise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.0s forwards; }
+    .latifa-alert.exiting .media-section { animation: mediaDrop 0.5s ease-in 0.2s forwards; }
+
+    @keyframes mediaRise {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes mediaDrop {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(40px); }
+    }
+
+    .media-frame-svg {
       position: absolute;
       inset: 0;
-      pointer-events: none;
-      z-index: 7;
-      overflow: visible;
-    }
-    .chiaa-flower {
-      position: absolute;
-      width: 22px;
-      height: 22px;
-      opacity: 0;
-    }
-    .chiaa-flower::before, .chiaa-flower::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 50%, #FFD1DC 0%, var(--c-cherry) 60%, transparent 72%);
-    }
-    .chiaa-flower::after {
-      transform: rotate(45deg) scale(0.8);
-      background: radial-gradient(circle at 50% 50%, #FFE4EC 0%, var(--c-petal) 55%, transparent 70%);
-    }
-    .chiaa-flower-1 { top: -8px;  right: 36px; transform: rotate(12deg); }
-    .chiaa-flower-2 { bottom: -6px; left: 130px; transform: rotate(-20deg) scale(0.8); }
-    .chiaa-flower-3 { top: 24px; right: -6px; transform: rotate(40deg) scale(0.65); }
-
-    .chiaa.entering .chiaa-flower   { animation: caFlowerIn 0.7s ease-out forwards; }
-    .chiaa.entering .chiaa-flower-1 { animation-delay: 2.7s; }
-    .chiaa.entering .chiaa-flower-2 { animation-delay: 2.85s; }
-    .chiaa.entering .chiaa-flower-3 { animation-delay: 3.0s; }
-    @keyframes caFlowerIn {
-      0%   { opacity: 0; transform: scale(0.3) rotate(0); }
-      100% { opacity: 0.9; }
-    }
-
-    .chiaa-sparkle {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .chiaa-sparkle::before, .chiaa-sparkle::after {
-      content: '';
-      position: absolute;
-      background: #FFF6A8;
-      box-shadow: 0 0 5px #FFE08A;
-      border-radius: 1px;
-    }
-    .chiaa-sparkle::before { left: 50%; top: 0; width: 1.5px; height: 100%; transform: translateX(-50%); }
-    .chiaa-sparkle::after  { top: 50%; left: 0; height: 1.5px; width: 100%; transform: translateY(-50%); }
-
-    .chiaa-sparkle-1 { top: 20%;  right: 14%; }
-    .chiaa-sparkle-2 { top: 72%;  right: 22%; width: 5px; height: 5px; }
-    .chiaa-sparkle-3 { top: 32%;  left: 44%;  width: 7px; height: 7px; }
-    .chiaa-sparkle-4 { bottom: 20%; left: 54%; width: 5px; height: 5px; }
-
-    .chiaa.idle .chiaa-sparkle { animation: caSparkle 3.5s ease-in-out infinite; }
-    .chiaa.idle .chiaa-sparkle-1 { animation-delay: 0.0s; }
-    .chiaa.idle .chiaa-sparkle-2 { animation-delay: 1.1s; }
-    .chiaa.idle .chiaa-sparkle-3 { animation-delay: 2.0s; }
-    .chiaa.idle .chiaa-sparkle-4 { animation-delay: 0.6s; }
-    @keyframes caSparkle {
-      0%, 100% { opacity: 0; transform: scale(0.4) rotate(0); }
-      15%      { opacity: 1; transform: scale(1.1) rotate(20deg); }
-      35%      { opacity: 0.6; transform: scale(0.9) rotate(45deg); }
-      55%      { opacity: 0; transform: scale(0.4) rotate(60deg); }
-    }
-
-    /* ============================================================
-       MEDIA POLAROID (below)
-       ============================================================ */
-    .chiaa-media-wrap {
-      position: absolute;
-      top: 195px;
-      left: 50%;
-      width: 420px;
-      transform: translateX(-50%) translateY(20px);
-      opacity: 0;
-      z-index: 2;
-      background: #FFFDF8;
-      padding: 10px 10px 40px;
-      border-radius: 3px;
-      box-shadow:
-        0 2px 3px rgba(139,69,87,0.1),
-        0 16px 40px -8px rgba(139, 69, 87, 0.3);
-    }
-    .chiaa-media-inner {
-      width: 100%;
-      height: 220px;
-      background: linear-gradient(135deg, var(--c-cream), var(--c-ivory));
-      border-radius: 2px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .chiaa-media-inner img,
-    .chiaa-media-inner video {
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      display: block;
+      pointer-events: none;
+      z-index: 6;
     }
-    .chiaa-media-caption {
+    .media-border-path {
+      fill: none;
+      stroke: var(--c-purple);
+      stroke-width: 2;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      filter: drop-shadow(0 0 4px var(--c-purple));
+    }
+    .latifa-alert.entering .media-border-path { animation: drawMediaBorder 1s ease-out 1.2s forwards; }
+    @keyframes drawMediaBorder { to { stroke-dashoffset: 0; } }
+
+    .media-corner {
       position: absolute;
-      bottom: 10px;
-      left: 0; right: 0;
-      text-align: center;
-      font-family: var(--font-script);
-      font-size: 15px;
-      color: var(--c-burgundy);
+      width: 16px; height: 16px;
+      border: 2px solid var(--c-cyan);
+      opacity: 0;
+      z-index: 7;
     }
-    .chiaa.entering .chiaa-media-wrap { animation: caMediaSlide 0.9s cubic-bezier(0.34,1.56,0.64,1) 1.1s forwards; }
-    @keyframes caMediaSlide {
-      0%   { opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.94); }
-      70%  { opacity: 1; transform: translateX(-50%) translateY(-4px) scale(1.01); }
-      100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    .mc-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+    .mc-tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
+    .mc-bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
+    .mc-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+    
+    .latifa-alert.entering .media-corner { animation: cornerLock 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1.8s forwards; }
+    @keyframes cornerLock {
+      0% { opacity: 0; transform: scale(1.5); }
+      100% { opacity: 1; transform: scale(1); }
     }
-    .chiaa.idle .chiaa-media-wrap { animation: caMediaIdle 8s ease-in-out infinite; }
-    @keyframes caMediaIdle {
-      0%,100% { transform: translateX(-50%) rotate(0); }
-      50%     { transform: translateX(-50%) rotate(0.2deg); }
+
+    .media-content {
+      width: 100%;
+      height: 240px;
+      background: var(--c-dark);
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(138, 43, 226, 0.2);
     }
-    .chiaa.exiting .chiaa-media-wrap { animation: caMediaExit 0.6s ease-in 0.2s forwards; }
-    @keyframes caMediaExit {
-      to { opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.94); }
+    .media-content img, .media-content video {
+      width: 100%; height: 100%; object-fit: contain; display: block;
     }
 
     /* ============================================================
-       EXIT
+       PARTICLES
        ============================================================ */
-    .chiaa.exiting .chiaa-pin        { animation: caPinExit 0.4s ease-in forwards; }
-    .chiaa.exiting .chiaa-polaroid   { animation: caPolaroidExit 0.6s ease-in 0.15s forwards; }
-    .chiaa.exiting .chiaa-card,
-    .chiaa.exiting .chiaa-paper      { animation: caFoldExit 0.7s ease-in 0.3s forwards; }
-    .chiaa.exiting .chiaa-petals     { animation: caPetalsExit 1s ease-in forwards; }
+    .particles-container {
+      position: absolute;
+      inset: -40px;
+      pointer-events: none;
+      z-index: 20;
+      overflow: visible;
+    }
+    .particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: var(--c-cyan);
+      border-radius: 50%;
+      opacity: 0;
+      box-shadow: 0 0 6px var(--c-cyan);
+    }
+    .latifa-alert.idle .particle { animation: particleFloat 4s linear infinite; }
+    
+    .particle:nth-child(1) { left: 10%; bottom: 0; animation-delay: 0.0s; }
+    .particle:nth-child(2) { left: 30%; bottom: 0; animation-delay: 1.2s; width: 2px; height: 2px; background: var(--c-pink); box-shadow: 0 0 6px var(--c-pink); }
+    .particle:nth-child(3) { left: 50%; bottom: 0; animation-delay: 0.5s; }
+    .particle:nth-child(4) { left: 70%; bottom: 0; animation-delay: 2.0s; width: 4px; height: 4px; }
+    .particle:nth-child(5) { left: 90%; bottom: 0; animation-delay: 1.5s; background: var(--c-purple); box-shadow: 0 0 6px var(--c-purple); }
+    .particle:nth-child(6) { left: 20%; bottom: 0; animation-delay: 2.8s; }
+    .particle:nth-child(7) { left: 60%; bottom: 0; animation-delay: 3.2s; width: 2px; height: 2px; }
+    .particle:nth-child(8) { left: 80%; bottom: 0; animation-delay: 0.8s; }
 
-    @keyframes caPinExit      { to { opacity: 0; transform: translateY(-20px) scale(0.6); } }
-    @keyframes caPolaroidExit { to { opacity: 0; transform: translateY(-50%) rotate(-5deg) translateY(30px); } }
-    @keyframes caFoldExit     { to { opacity: 0; transform: translateX(-50%) scale(0.92); filter: blur(3px); } }
-    @keyframes caPetalsExit   { to { opacity: 0; } }
+    @keyframes particleFloat {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translateY(-300px) scale(0); opacity: 0; }
+    }
+
+    /* ============================================================
+       EXIT SCANLINE
+       ============================================================ */
+    .exit-scan {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent, var(--c-purple), transparent);
+      opacity: 0;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .latifa-alert.exiting .exit-scan { animation: exitScanline 0.6s ease-in 0.4s forwards; }
+    @keyframes exitScanline {
+      0% { transform: translateY(100%); opacity: 0.8; }
+      100% { transform: translateY(-100%); opacity: 0; }
+    }
+  a
   </style>
 </head>
 <body>
   <div id="root"></div>
 
   <div class="demo-controls" id="demoControls">
-    <h3>🌸 Chiaa Alert Demo</h3>
-    <button onclick="triggerDonation(0)">Test: TEXT + media</button>
-    <button onclick="triggerDonation(1)">Test: TEXT only</button>
-    <button onclick="triggerDonation(2)">Test: VOICE</button>
-    <button onclick="triggerDonation(3)">Test: SOUND</button>
+    <h3>Latifa Command Center</h3>
+    <button onclick="triggerAlert(0)">Test: MEDIA</button>
+    <button onclick="triggerAlert(1)">Test: TEXT</button>
+    <button onclick="triggerAlert(2)">Test: VOICE</button>
+    <button onclick="triggerAlert(3)">Test: HYPERSOUND</button>
   </div>
 
   <script>
-    const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
-    const fmt = (d) => `${CURRENCY_SYMBOLS[d.currency || 'INR'] || (d.currency || '₹')}${d.amount.toLocaleString('en-IN')}`;
+    // ============================================================
+    // DATA & HELPERS
+    // ============================================================
+    const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    const fmt = (d) => `${CURRENCY_SYMBOLS[d.currency || 'INR'] || '₹'}${d.amount.toLocaleString('en-IN')}`;
+    
     const kindLabel = (d) => {
       if (d.voice_message_url) return 'VOICE';
-      if (d.hypersound_url || d.is_hyperemote) return 'SOUND';
+      if (d.hypersound_url || d.is_hyperemote) return 'HYPERSOUND';
       if (d.media_url) return 'MEDIA';
       return 'TEXT';
     };
 
     const mockDonations = [
-      { name: 'Sakura',      amount: 500,  currency: 'INR', message: 'Keep streaming! Love your content ♡', media_url: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=600', media_type: 'image' },
-      { name: 'CherryBlossom', amount: 1000, currency: 'INR', message: 'You are amazing!', media_url: null },
-      { name: 'Petal',       amount: 250,  currency: 'INR', message: 'Voice message test!', voice_message_url: 'x' },
-      { name: 'Memory',      amount: 750,  currency: 'INR', message: 'Hypersound alert!', hypersound_url: 'x', is_hyperemote: true },
+      { name: 'SniperKing', amount: 1500, currency: 'INR', message: 'Chicken Dinner incoming! 🍗', media_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600', media_type: 'image' },
+      { name: 'LatifaFan_99', amount: 500, currency: 'INR', message: 'Love the streams!', media_url: null },
+      { name: 'BGMI_Pro', amount: 2000, currency: 'INR', message: 'Voice message test', voice_message_url: 'x' },
+      { name: 'AirdropHunter', amount: 5000, currency: 'INR', message: 'Hypersound activated!', hypersound_url: 'x', is_hyperemote: true }
     ];
 
     let currentDonation = mockDonations[0];
     let phaseTimer = null;
     let hideTimer = null;
+    let countInterval = null;
 
+    // ============================================================
+    // RENDER
+    // ============================================================
     function render(donation, phase) {
       const badge = kindLabel(donation);
       const mediaUrl = donation.media_url || null;
       const isVideo = (donation.media_type || '').toLowerCase().includes('video');
       const showMedia = Boolean(mediaUrl);
-      const amountStr = fmt(donation);
-
-      const amountDigits = amountStr.split('').map((ch, i) => {
-        const delay = (1.9 + i * 0.05).toFixed(2);
-        const display = ch === ' ' ? '\u00A0' : ch;
-        return `<span class="digit" style="animation-delay:${delay}s">${display}</span>`;
-      }).join('');
+      const targetAmountStr = fmt(donation);
+      
+      // Split name into characters for sequential animation
+      const nameStr = (donation.name || 'Anonymous').trim().toUpperCase();
+      const nameChars = nameStr.split('').map((char, i) => 
+        `<span class="char" style="animation-delay: ${1.0 + (i * 0.04)}s">${char === ' ' ? '&nbsp;' : char}</span>`
+      ).join('');
 
       const mediaHtml = showMedia ? `
-        <div class="chiaa-media-wrap">
-          <div class="chiaa-media-inner">
-            ${isVideo
-              ? `<video src="${mediaUrl}" autoplay loop muted playsinline></video>`
+        <div class="media-section">
+          <svg class="media-frame-svg" viewBox="0 0 480 240" preserveAspectRatio="none">
+            <path class="media-border-path" d="M 2 2 L 478 2 L 478 224 L 462 238 L 2 238 Z" />
+          </svg>
+          <div class="media-corner mc-tl"></div>
+          <div class="media-corner mc-tr"></div>
+          <div class="media-corner mc-bl"></div>
+          <div class="media-corner mc-br"></div>
+          <div class="media-content">
+            ${isVideo 
+              ? `<video src="${mediaUrl}" autoplay loop muted playsinline></video>` 
               : `<img src="${mediaUrl}" alt="donation media" />`}
           </div>
-          <div class="chiaa-media-caption">a little memory ~ ${badge.toLowerCase()}</div>
-        </div>` : '';
+        </div>
+      ` : '';
 
       return `
-        <div class="chiaa ${phase}">
-          <div class="chiaa-petals">
-            ${Array.from({length: 8}).map(() => '<div class="chiaa-petal"></div>').join('')}
-          </div>
-
-          <div class="chiaa-stage">
-            <div class="chiaa-paper chiaa-paper-3"></div>
-            <div class="chiaa-paper chiaa-paper-2"></div>
-            <div class="chiaa-paper chiaa-paper-1"></div>
-
-            <div class="chiaa-card">
-              <!-- 4 Corner Cherry Blossoms (Soft Flourishes) -->
-              <div class="chiaa-corner-pos chiaa-corner-tl"><div class="chiaa-corner-anim"><div class="chiaa-corner-inner"><img src="/cherry-blossom.jpg" alt="" /></div></div></div>
-              <div class="chiaa-corner-pos chiaa-corner-tr"><div class="chiaa-corner-anim"><div class="chiaa-corner-inner"><img src="/cherry-blossom.jpg" alt="" /></div></div></div>
-              <div class="chiaa-corner-pos chiaa-corner-bl"><div class="chiaa-corner-anim"><div class="chiaa-corner-inner"><img src="/cherry-blossom.jpg" alt="" /></div></div></div>
-              <div class="chiaa-corner-pos chiaa-corner-br"><div class="chiaa-corner-anim"><div class="chiaa-corner-inner"><img src="/cherry-blossom.jpg" alt="" /></div></div></div>
-
-              <div class="chiaa-polaroid">
-                <div class="chiaa-polaroid-inner">
-                  <img src="/Chiaa_YT_PROFILE_FINAL_1.png" alt="Chiaa" onerror="this.style.display='none'" />
-                </div>
-                <div class="chiaa-polaroid-caption">Chiaa ♡</div>
-              </div>
-
-              <div class="chiaa-pin"></div>
-
-              <div class="chiaa-content">
-                <div class="chiaa-name">${(donation.name || 'Anonymous').trim()}</div>
-                <div class="chiaa-amount-row">
-                  <div class="chiaa-amount">${amountDigits}</div>
-                  <div class="chiaa-badge">${badge}</div>
-                </div>
-                ${donation.message ? `<div class="chiaa-message">"${donation.message}"</div>` : ''}
-              </div>
-
-              <div class="chiaa-decor">
-                <div class="chiaa-flower chiaa-flower-1"></div>
-                <div class="chiaa-flower chiaa-flower-2"></div>
-                <div class="chiaa-flower chiaa-flower-3"></div>
-                <div class="chiaa-sparkle chiaa-sparkle-1"></div>
-                <div class="chiaa-sparkle chiaa-sparkle-2"></div>
-                <div class="chiaa-sparkle chiaa-sparkle-3"></div>
-                <div class="chiaa-sparkle chiaa-sparkle-4"></div>
+        <div class="latifa-alert ${phase}">
+          <div class="scanline-overlay"></div>
+          <div class="exit-scan"></div>
+          
+          <div class="command-panel">
+            <div class="hex-avatar-wrapper">
+              <div class="hex-ring"></div>
+              <div class="hex-inner">
+                <img src="/latifa_logo.png" alt="Latifa" onerror="this.style.display='none'" />
               </div>
             </div>
+            
+            <div class="info-block">
+              <div class="donor-name">${nameChars}</div>
+              <div class="amount-block">
+                <div class="donation-amount" id="amountDisplay">₹0</div>
+                <div class="amount-bloom"></div>
+                <div class="type-module">${badge}</div>
+              </div>
+              ${donation.message ? `<div class="message-glass">"${donation.message}"</div>` : ''}
+            </div>
+          </div>
 
-            ${mediaHtml}
+          ${mediaHtml}
+
+          <div class="particles-container">
+            ${Array.from({length: 8}).map(() => '<div class="particle"></div>').join('')}
           </div>
         </div>
       `;
     }
 
-    function showDonation(donation) {
+    // ============================================================
+    // ANIMATION LOGIC
+    // ============================================================
+    function showAlert(donation) {
       clearTimeout(phaseTimer);
       clearTimeout(hideTimer);
+      clearInterval(countInterval);
+      
       const root = document.getElementById('root');
       root.innerHTML = render(donation, 'entering');
+      
+      // Count up animation for amount
+      const targetAmount = donation.amount;
+      const symbol = CURRENCY_SYMBOLS[donation.currency || 'INR'] || '₹';
+      const duration = 1200; // 1.2 seconds
+      const startTime = performance.now();
+      const amountEl = document.getElementById('amountDisplay');
+      
+      countInterval = setInterval(() => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(ease * targetAmount);
+        
+        if (amountEl) {
+          amountEl.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
+        }
+        
+        if (progress >= 1) {
+          clearInterval(countInterval);
+          if (amountEl) amountEl.textContent = fmt(donation);
+        }
+      }, 16);
+
+      // Transition to idle
       phaseTimer = setTimeout(() => {
-        const el = root.querySelector('.chiaa');
-        if (el) { el.classList.remove('entering'); el.classList.add('idle'); }
+        const el = root.querySelector('.latifa-alert');
+        if (el) {
+          el.classList.remove('entering');
+          el.classList.add('idle');
+        }
       }, 3500);
     }
 
-    function hideDonation() {
+    function hideAlert() {
       const root = document.getElementById('root');
-      const el = root.querySelector('.chiaa');
+      const el = root.querySelector('.latifa-alert');
       if (!el) return;
+      
+      clearInterval(countInterval);
       el.classList.remove('idle', 'entering');
       el.classList.add('exiting');
-      hideTimer = setTimeout(() => { root.innerHTML = ''; }, 1200);
+      
+      hideTimer = setTimeout(() => {
+        root.innerHTML = '';
+      }, 1200);
     }
 
-    function triggerDonation(index) {
+    function triggerAlert(index) {
       currentDonation = mockDonations[index];
-      hideDonation();
-      setTimeout(() => showDonation(currentDonation), 1300);
+      hideAlert();
+      setTimeout(() => showAlert(currentDonation), 1300);
     }
 
+    // ============================================================
+    // INIT
+    // ============================================================
     window.addEventListener('DOMContentLoaded', () => {
       if (new URLSearchParams(window.location.search).get('demo') === '1') {
         document.getElementById('demoControls').classList.add('visible');
       }
-      setTimeout(() => showDonation(currentDonation), 300);
+      setTimeout(() => showAlert(currentDonation), 300);
     });
   </script>
 </body>
