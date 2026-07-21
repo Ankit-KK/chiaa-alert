@@ -1,13 +1,18 @@
 <!doctype html>
 <html lang="en">
-has
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Latifa Command Center Alert</title>
+  
+  <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- GSAP Animation Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
   <style>
     /* ============================================================
        GLOBAL — Transparent for OBS
@@ -25,25 +30,27 @@ has
       background: transparent;
     }
 
-    /* Demo Controls (visible only with ?demo=1) */
+    /* Demo Controls */
     .demo-controls {
       display: none; position: fixed; top: 16px; left: 16px; z-index: 9999;
-      background: rgba(10, 10, 15, 0.9); border: 1px solid #8A2BE2;
+      background: rgba(10, 10, 15, 0.95); border: 1px solid #8A2BE2;
       padding: 14px 18px; border-radius: 4px;
       font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #fff;
+      backdrop-filter: blur(8px);
     }
     .demo-controls.visible { display: block; }
-    .demo-controls h3 { font-family: 'Orbitron', sans-serif; font-size: 14px; margin-bottom: 10px; color: #00FFFF; text-transform: uppercase; letter-spacing: 1px; }
+    .demo-controls h3 { font-family: 'Orbitron', sans-serif; font-size: 13px; margin-bottom: 10px; color: #00FFFF; text-transform: uppercase; letter-spacing: 1.5px; }
     .demo-controls button {
       background: linear-gradient(90deg, #8A2BE2, #FF007F);
       color: white; border: none; padding: 6px 12px; margin: 3px 4px 3px 0;
       border-radius: 2px; font-family: 'Rajdhani', sans-serif; font-weight: 700;
       cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+      transition: filter 0.2s;
     }
-    .demo-controls button:hover { filter: brightness(1.2); }
+    .demo-controls button:hover { filter: brightness(1.3); }
 
     /* ============================================================
-       TOKENS
+       TOKENS & BASE
        ============================================================ */
     .latifa-alert {
       --c-purple: #8A2BE2;
@@ -61,29 +68,18 @@ has
       flex-direction: column;
       align-items: center;
       pointer-events: none;
-      width: 560px;
+      width: 580px;
+      /* Initial state for GSAP to animate from */
+      opacity: 0; 
     }
 
     /* ============================================================
-       SCANLINE OVERLAY
+       IMPACT FLASH & SHAKE
        ============================================================ */
-    .scanline-overlay {
-      position: absolute; inset: -50px; z-index: 50; pointer-events: none;
-      background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 255, 0.03) 51%, transparent 52%);
-      background-size: 100% 4px;
-      opacity: 0;
-    }
-    .latifa-alert.entering .scanline-overlay { animation: scanlineSweep 1.5s ease-out 0.2s forwards; }
-    .latifa-alert.idle .scanline-overlay { animation: scanlineIdle 6s linear infinite; }
-    .latifa-alert.exiting .scanline-overlay { animation: scanlineSweep 0.8s ease-in forwards; }
-
-    @keyframes scanlineSweep {
-      0% { transform: translateY(-100%); opacity: 1; }
-      100% { transform: translateY(100%); opacity: 0; }
-    }
-    @keyframes scanlineIdle {
-      0% { transform: translateY(-100%); opacity: 0.5; }
-      100% { transform: translateY(100%); opacity: 0.5; }
+    .impact-flash {
+      position: absolute; inset: -100px;
+      background: radial-gradient(circle, rgba(138, 43, 226, 0.4) 0%, transparent 70%);
+      opacity: 0; pointer-events: none; z-index: 100;
     }
 
     /* ============================================================
@@ -91,42 +87,38 @@ has
        ============================================================ */
     .command-panel {
       position: relative;
-      width: 560px;
+      width: 580px;
       height: 160px;
       background: linear-gradient(135deg, var(--c-glass) 0%, rgba(10, 10, 15, 0.85) 100%);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      /* Tactical angled cut on bottom right */
       clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%);
       border: 1px solid var(--c-glass-border);
-      box-shadow: 0 0 20px rgba(138, 43, 226, 0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: 0 0 30px rgba(138, 43, 226, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
       display: flex;
-      padding: 20px 24px 20px 120px; /* Left padding for hex avatar */
+      padding: 20px 24px 20px 120px;
       gap: 16px;
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
       z-index: 10;
-    }
-    .latifa-alert.entering .command-panel { animation: panelAssemble 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards; }
-    .latifa-alert.exiting .command-panel { animation: panelDissolve 0.6s ease-in forwards; }
-
-    @keyframes panelAssemble {
-      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes panelDissolve {
-      0% { opacity: 1; transform: scale(1); filter: blur(0); }
-      100% { opacity: 0; transform: scale(1.05); filter: blur(8px); }
+      transform-origin: center center;
     }
 
-    /* Illuminated border segments */
-    .command-panel::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    /* Glass sheen sweep effect */
+    .glass-sheen {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+      transform: translateX(-100%);
+      pointer-events: none;
+      z-index: 11;
+    }
+
+    .top-border {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, var(--c-cyan), var(--c-purple), var(--c-pink));
-      opacity: 0; transform: scaleX(0); transform-origin: left;
+      transform-origin: left;
+      transform: scaleX(0);
+      z-index: 12;
+      box-shadow: 0 0 10px var(--c-cyan);
     }
-    .latifa-alert.entering .command-panel::before { animation: borderDraw 0.6s ease-out 0.8s forwards; }
-    @keyframes borderDraw { to { opacity: 1; transform: scaleX(1); } }
 
     /* ============================================================
        HEXAGONAL AVATAR
@@ -139,25 +131,13 @@ has
       width: 76px;
       height: 84px;
       z-index: 12;
-      opacity: 0;
     }
-    .latifa-alert.entering .hex-avatar-wrapper { animation: avatarLock 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards; }
-    @keyframes avatarLock {
-      0% { opacity: 0; transform: translateY(-50%) scale(0.5) rotate(-30deg); }
-      100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0deg); }
-    }
-
     .hex-ring {
       position: absolute; inset: -4px;
       background: conic-gradient(from 0deg, transparent 0%, var(--c-cyan) 25%, var(--c-pink) 50%, transparent 75%);
       clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      animation: rotateRing 6s linear infinite;
       filter: blur(2px);
     }
-    .latifa-alert.idle .hex-ring { animation: rotateRing 6s linear infinite, breatheGlow 3s ease-in-out infinite; }
-    @keyframes rotateRing { to { transform: rotate(360deg); } }
-    @keyframes breatheGlow { 0%, 100% { filter: blur(2px) brightness(1); } 50% { filter: blur(4px) brightness(1.3); } }
-
     .hex-inner {
       position: absolute; inset: 2px;
       background: var(--c-dark);
@@ -165,9 +145,15 @@ has
       overflow: hidden;
       display: flex; align-items: center; justify-content: center;
     }
-    .hex-inner img {
-      width: 110%; height: 110%; object-fit: cover;
-      /* Counter-rotate slightly if needed, but cover handles it */
+    .hex-inner img { width: 115%; height: 115%; object-fit: cover; }
+
+    .energy-ripple {
+      position: absolute; inset: 0;
+      border: 2px solid var(--c-cyan);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
     }
 
     /* ============================================================
@@ -182,7 +168,6 @@ has
       min-width: 0;
     }
 
-    /* Donor Name */
     .donor-name {
       font-family: 'Orbitron', sans-serif;
       font-size: 26px;
@@ -196,50 +181,40 @@ has
     .donor-name .char {
       display: inline-block;
       opacity: 0;
-      transform: translateY(8px);
-      animation: charReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      transform: translateY(15px);
+      filter: blur(4px);
     }
-    .donor-name .char:last-child {
+    .donor-name .char.cyan-highlight {
       color: var(--c-cyan);
-      text-shadow: 0 0 8px var(--c-cyan);
-      animation: charReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards, cyanPulse 0.5s ease-out 0.3s;
+      text-shadow: 0 0 10px var(--c-cyan);
     }
-    @keyframes charReveal { to { opacity: 1; transform: translateY(0); } }
-    @keyframes cyanPulse { 0% { text-shadow: 0 0 20px var(--c-cyan); } 100% { text-shadow: 0 0 8px var(--c-cyan); } }
 
-    /* Amount Block */
     .amount-block {
       position: relative;
       display: inline-flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 10px;
     }
     .donation-amount {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 42px;
+      font-size: 44px;
       font-weight: 700;
       color: var(--c-text);
       line-height: 1;
       letter-spacing: 1px;
+      transform-origin: left center;
     }
     .amount-bloom {
       position: absolute;
-      inset: -10px -20px;
-      background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.6) 0%, transparent 70%);
+      inset: -15px -25px;
+      background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.7) 0%, transparent 70%);
       border-radius: 50%;
       opacity: 0;
       transform: scale(0.5);
       z-index: -1;
-      filter: blur(8px);
-    }
-    .latifa-alert.entering .amount-bloom { animation: bloomPulse 0.8s ease-out 1.8s forwards; }
-    @keyframes bloomPulse {
-      0% { opacity: 0; transform: scale(0.5); }
-      50% { opacity: 1; transform: scale(1.2); }
-      100% { opacity: 0.6; transform: scale(1); }
+      filter: blur(10px);
     }
 
-    /* Tactical Type Module */
     .type-module {
       font-family: 'Orbitron', sans-serif;
       font-size: 11px;
@@ -247,38 +222,28 @@ has
       color: var(--c-cyan);
       background: rgba(0, 255, 255, 0.08);
       border: 1px solid rgba(0, 255, 255, 0.3);
-      padding: 3px 10px;
+      padding: 4px 12px;
       letter-spacing: 2px;
       clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
       opacity: 0;
-      transform: translateX(-10px);
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-    }
-    .latifa-alert.entering .type-module { animation: modulePowerOn 0.5s ease-out 1.4s forwards; }
-    @keyframes modulePowerOn {
-      0% { opacity: 0; transform: translateX(-10px); filter: brightness(2); }
-      100% { opacity: 1; transform: translateX(0); filter: brightness(1); }
+      transform: translateX(-15px);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
     }
 
-    /* Message Glass Panel */
     .message-glass {
-      margin-top: 4px;
+      margin-top: 6px;
       font-family: 'Exo 2', sans-serif;
       font-size: 15px;
       color: var(--c-text-dim);
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
       border-left: 2px solid var(--c-pink);
-      padding: 6px 12px;
+      padding: 8px 14px;
       backdrop-filter: blur(4px);
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(15px);
       max-width: 100%;
       word-wrap: break-word;
-    }
-    .latifa-alert.entering .message-glass { animation: glassSlideUp 0.6s ease-out 1.6s forwards; }
-    @keyframes glassSlideUp {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     /* ============================================================
@@ -286,64 +251,38 @@ has
        ============================================================ */
     .media-section {
       position: relative;
-      width: 480px;
-      margin-top: -10px; /* Slight overlap with command panel */
+      width: 500px;
+      margin-top: -12px;
       z-index: 5;
       opacity: 0;
-      transform: translateY(40px);
-    }
-    .latifa-alert.entering .media-section { animation: mediaRise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.0s forwards; }
-    .latifa-alert.exiting .media-section { animation: mediaDrop 0.5s ease-in 0.2s forwards; }
-
-    @keyframes mediaRise {
-      0% { opacity: 0; transform: translateY(40px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes mediaDrop {
-      0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(40px); }
+      transform: translateY(50px);
     }
 
     .media-frame-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 6;
+      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;
     }
     .media-border-path {
       fill: none;
       stroke: var(--c-purple);
       stroke-width: 2;
-      stroke-dasharray: 1000;
-      stroke-dashoffset: 1000;
-      filter: drop-shadow(0 0 4px var(--c-purple));
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      filter: drop-shadow(0 0 6px var(--c-purple));
     }
-    .latifa-alert.entering .media-border-path { animation: drawMediaBorder 1s ease-out 1.2s forwards; }
-    @keyframes drawMediaBorder { to { stroke-dashoffset: 0; } }
 
     .media-corner {
-      position: absolute;
-      width: 16px; height: 16px;
+      position: absolute; width: 18px; height: 18px;
       border: 2px solid var(--c-cyan);
-      opacity: 0;
-      z-index: 7;
+      opacity: 0; z-index: 7;
+      box-shadow: 0 0 8px var(--c-cyan);
     }
     .mc-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
     .mc-tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
     .mc-bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
     .mc-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
-    
-    .latifa-alert.entering .media-corner { animation: cornerLock 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1.8s forwards; }
-    @keyframes cornerLock {
-      0% { opacity: 0; transform: scale(1.5); }
-      100% { opacity: 1; transform: scale(1); }
-    }
 
     .media-content {
-      width: 100%;
-      height: 240px;
+      width: 100%; height: 240px;
       background: var(--c-dark);
       clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
       overflow: hidden;
@@ -355,56 +294,27 @@ has
     }
 
     /* ============================================================
-       PARTICLES
+       AMBIENT PARTICLES
        ============================================================ */
     .particles-container {
-      position: absolute;
-      inset: -40px;
-      pointer-events: none;
-      z-index: 20;
-      overflow: visible;
+      position: absolute; inset: -40px; pointer-events: none; z-index: 20; overflow: visible;
     }
     .particle {
-      position: absolute;
-      width: 3px; height: 3px;
-      background: var(--c-cyan);
-      border-radius: 50%;
-      opacity: 0;
-      box-shadow: 0 0 6px var(--c-cyan);
+      position: absolute; width: 3px; height: 3px;
+      background: var(--c-cyan); border-radius: 50%;
+      opacity: 0; box-shadow: 0 0 6px var(--c-cyan);
     }
-    .latifa-alert.idle .particle { animation: particleFloat 4s linear infinite; }
-    
-    .particle:nth-child(1) { left: 10%; bottom: 0; animation-delay: 0.0s; }
-    .particle:nth-child(2) { left: 30%; bottom: 0; animation-delay: 1.2s; width: 2px; height: 2px; background: var(--c-pink); box-shadow: 0 0 6px var(--c-pink); }
-    .particle:nth-child(3) { left: 50%; bottom: 0; animation-delay: 0.5s; }
-    .particle:nth-child(4) { left: 70%; bottom: 0; animation-delay: 2.0s; width: 4px; height: 4px; }
-    .particle:nth-child(5) { left: 90%; bottom: 0; animation-delay: 1.5s; background: var(--c-purple); box-shadow: 0 0 6px var(--c-purple); }
-    .particle:nth-child(6) { left: 20%; bottom: 0; animation-delay: 2.8s; }
-    .particle:nth-child(7) { left: 60%; bottom: 0; animation-delay: 3.2s; width: 2px; height: 2px; }
-    .particle:nth-child(8) { left: 80%; bottom: 0; animation-delay: 0.8s; }
-
-    @keyframes particleFloat {
-      0% { transform: translateY(0) scale(0.5); opacity: 0; }
-      20% { opacity: 1; }
-      100% { transform: translateY(-300px) scale(0); opacity: 0; }
-    }
+    .particle.pink { background: var(--c-pink); box-shadow: 0 0 6px var(--c-pink); }
+    .particle.purple { background: var(--c-purple); box-shadow: 0 0 6px var(--c-purple); }
 
     /* ============================================================
-       EXIT SCANLINE
+       EXIT ANIMATION
        ============================================================ */
     .exit-scan {
       position: absolute; inset: 0;
       background: linear-gradient(to bottom, transparent, var(--c-purple), transparent);
-      opacity: 0;
-      z-index: 100;
-      pointer-events: none;
+      opacity: 0; z-index: 100; pointer-events: none;
     }
-    .latifa-alert.exiting .exit-scan { animation: exitScanline 0.6s ease-in 0.4s forwards; }
-    @keyframes exitScanline {
-      0% { transform: translateY(100%); opacity: 0.8; }
-      100% { transform: translateY(-100%); opacity: 0; }
-    }
-  a
   </style>
 </head>
 <body>
@@ -440,30 +350,29 @@ has
     ];
 
     let currentDonation = mockDonations[0];
-    let phaseTimer = null;
+    let masterTimeline = null;
     let hideTimer = null;
     let countInterval = null;
 
     // ============================================================
-    // RENDER
+    // RENDER HTML
     // ============================================================
-    function render(donation, phase) {
+    function render(donation) {
       const badge = kindLabel(donation);
       const mediaUrl = donation.media_url || null;
       const isVideo = (donation.media_type || '').toLowerCase().includes('video');
       const showMedia = Boolean(mediaUrl);
-      const targetAmountStr = fmt(donation);
       
-      // Split name into characters for sequential animation
       const nameStr = (donation.name || 'Anonymous').trim().toUpperCase();
-      const nameChars = nameStr.split('').map((char, i) => 
-        `<span class="char" style="animation-delay: ${1.0 + (i * 0.04)}s">${char === ' ' ? '&nbsp;' : char}</span>`
-      ).join('');
+      const nameChars = nameStr.split('').map((char, i) => {
+        const isLast = i === nameStr.length - 1;
+        return `<span class="char ${isLast ? 'cyan-highlight' : ''}">${char === ' ' ? '&nbsp;' : char}</span>`;
+      }).join('');
 
       const mediaHtml = showMedia ? `
         <div class="media-section">
-          <svg class="media-frame-svg" viewBox="0 0 480 240" preserveAspectRatio="none">
-            <path class="media-border-path" d="M 2 2 L 478 2 L 478 224 L 462 238 L 2 238 Z" />
+          <svg class="media-frame-svg" viewBox="0 0 500 240" preserveAspectRatio="none">
+            <path class="media-border-path" d="M 2 2 L 498 2 L 498 224 L 482 238 L 2 238 Z" />
           </svg>
           <div class="media-corner mc-tl"></div>
           <div class="media-corner mc-tr"></div>
@@ -477,13 +386,26 @@ has
         </div>
       ` : '';
 
+      // Generate randomized particles
+      const particles = Array.from({length: 12}).map((_, i) => {
+        const type = ['','pink','purple'][Math.floor(Math.random()*3)];
+        const left = Math.random() * 100;
+        const delay = Math.random() * 2;
+        const duration = 3 + Math.random() * 3;
+        return `<div class="particle ${type}" style="left:${left}%; bottom:0; animation-delay:${delay}s;"></div>`;
+      }).join('');
+
       return `
-        <div class="latifa-alert ${phase}">
-          <div class="scanline-overlay"></div>
+        <div class="latifa-alert">
+          <div class="impact-flash"></div>
           <div class="exit-scan"></div>
           
           <div class="command-panel">
+            <div class="top-border"></div>
+            <div class="glass-sheen"></div>
+            
             <div class="hex-avatar-wrapper">
+              <div class="energy-ripple"></div>
               <div class="hex-ring"></div>
               <div class="hex-inner">
                 <img src="/latifa_logo.png" alt="Latifa" onerror="this.style.display='none'" />
@@ -503,76 +425,176 @@ has
 
           ${mediaHtml}
 
-          <div class="particles-container">
-            ${Array.from({length: 8}).map(() => '<div class="particle"></div>').join('')}
-          </div>
+          <div class="particles-container">${particles}</div each>
         </div>
       `;
     }
 
     // ============================================================
-    // ANIMATION LOGIC
+    // GSAP ANIMATION CHOREOGRAPHY
     // ============================================================
     function showAlert(donation) {
-      clearTimeout(phaseTimer);
+      if (masterTimeline) masterTimeline.kill();
       clearTimeout(hideTimer);
       clearInterval(countInterval);
       
       const root = document.getElementById('root');
-      root.innerHTML = render(donation, 'entering');
+      root.innerHTML = render(donation);
       
-      // Count up animation for amount
+      const alertEl = document.querySelector('.latifa-alert');
+      
+      // Reveal main container instantly
+      gsap.set(alertEl, { opacity: 1 });
+
+      masterTimeline = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        onComplete: () => {
+          // Start idle ambient animations after entrance
+          startIdleAnimations();
+        }
+      });
+
       const targetAmount = donation.amount;
       const symbol = CURRENCY_SYMBOLS[donation.currency || 'INR'] || '₹';
-      const duration = 1200; // 1.2 seconds
+
+      // 1. ANTICIPATION: Micro flash and screen shake
+      masterTimeline
+        .to(".impact-flash", { opacity: 0.6, duration: 0.1, yoyo: true, repeat: 1 })
+        .to(".command-panel", { x: "-=2", duration: 0.05, yoyo: true, repeat: 3 }, "<");
+
+      // 2. ASSEMBLY: Panel slides in with elastic overshoot
+      masterTimeline.fromTo(".command-panel",
+        { scale: 0.92, opacity: 0, y: 30 },
+        { scale: 1, opacity: 1, y: 0, duration: 0.9, ease: "back.out(1.2)" }, "-=0.1"
+      );
+
+      // 3. SECONDARY MOTION: Border draws & glass sheen sweeps across
+      masterTimeline
+        .to(".top-border", { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, "-=0.6")
+        .to(".glass-sheen", { x: "150%", duration: 0.9, ease: "power1.inOut" }, "-=0.5");
+
+      // 4. LOGO: Drops with heavy bounce, followed by energy ripple
+      masterTimeline
+        .fromTo(".hex-avatar-wrapper",
+          { scale: 0, rotation: -45, opacity: 0 },
+          { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "elastic.out(1, 0.6)" }, "-=0.6"
+        )
+        .to(".energy-ripple", { scale: 1.6, opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.4");
+
+      // 5. TEXT: Staggered character reveal with blur clear
+      masterTimeline.fromTo(".donor-name .char",
+        { opacity: 0, y: 15, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, stagger: 0.03, ease: "back.out(1.5)" }, "-=0.5"
+      );
+
+      // 6. AMOUNT: Punches in + radial bloom
+      masterTimeline
+        .fromTo(".donation-amount",
+          { scale: 0.5, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, "-=0.3"
+        )
+        .to(".amount-bloom", { scale: 1.3, opacity: 0.7, duration: 0.7, ease: "power2.out" }, "<");
+
+      // 7. TYPE MODULE: Powers on (slide + brightness drop)
+      masterTimeline.fromTo(".type-module",
+        { x: -20, opacity: 0, filter: "brightness(2) blur(2px)" },
+        { x: 0, opacity: 1, filter: "brightness(1) blur(0px)", duration: 0.5, ease: "power2.out" }, "-=0.3"
+      );
+
+      // 8. MESSAGE: Glass panel slides up
+      masterTimeline.fromTo(".message-glass",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.2"
+      );
+
+      // 9. MEDIA: Rises, frame draws, corners snap with micro-bounce
+      if (document.querySelector('.media-section')) {
+        masterTimeline
+          .fromTo(".media-section",
+            { y: 60, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4"
+          )
+          .to(".media-border-path", { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, "-=0.6")
+          .fromTo(".media-corner", 
+            { scale: 1.8, opacity: 0 }, 
+            { scale: 1, opacity: 1, duration: 0.4, stagger: 0.06, ease: "back.out(2.5)" }, "-=0.5"
+          );
+      }
+
+      // 10. AMOUNT COUNT-UP (Runs concurrently with entrance)
+      const duration = 1500;
       const startTime = performance.now();
       const amountEl = document.getElementById('amountDisplay');
       
       countInterval = setInterval(() => {
         const elapsed = performance.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease out cubic
-        const ease = 1 - Math.pow(1 - progress, 3);
+        const ease = 1 - Math.pow(1 - progress, 3); // Ease out cubic
         const current = Math.floor(ease * targetAmount);
-        
-        if (amountEl) {
-          amountEl.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
-        }
+        if (amountEl) amountEl.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
         
         if (progress >= 1) {
           clearInterval(countInterval);
           if (amountEl) amountEl.textContent = fmt(donation);
         }
       }, 16);
+    }
 
-      // Transition to idle
-      phaseTimer = setTimeout(() => {
-        const el = root.querySelector('.latifa-alert');
-        if (el) {
-          el.classList.remove('entering');
-          el.classList.add('idle');
-        }
-      }, 3500);
+    // ============================================================
+    // IDLE & EXIT ANIMATIONS
+    // ============================================================
+    function startIdleAnimations() {
+      const alertEl = document.querySelector('.latifa-alert');
+      if (!alertEl) return;
+
+      // Continuous subtle float for the whole alert
+      gsap.to(".command-panel", { y: -3, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      
+      // Continuous ring rotation
+      gsap.to(".hex-ring", { rotation: 360, duration: 8, repeat: -1, ease: "linear" });
+
+      // Floating particles
+      gsap.utils.toArray(".particle").forEach(p => {
+        gsap.to(p, {
+          y: -250 - Math.random() * 100,
+          x: (Math.random() - 0.5) * 40,
+          opacity: 0.8,
+          duration: 3 + Math.random() * 3,
+          repeat: -1,
+          delay: Math.random() * 2,
+          ease: "none",
+          onRepeat: () => {
+            gsap.set(p, { y: 0, x: 0, opacity: 0 });
+          }
+        });
+      });
     }
 
     function hideAlert() {
-      const root = document.getElementById('root');
-      const el = root.querySelector('.latifa-alert');
-      if (!el) return;
+      const alertEl = document.querySelector('.latifa-alert');
+      if (!alertEl) return;
       
       clearInterval(countInterval);
-      el.classList.remove('idle', 'entering');
-      el.classList.add('exiting');
-      
-      hideTimer = setTimeout(() => {
-        root.innerHTML = '';
-      }, 1200);
+      if (masterTimeline) masterTimeline.kill();
+
+      // Exit choreography
+      const exitTl = gsap.timeline({
+        onComplete: () => {
+          document.getElementById('root').innerHTML = '';
+        }
+      });
+
+      exitTl
+        .to(".exit-scan", { opacity: 0.6, duration: 0.1, yoyo: true, repeat: 1 })
+        .to(".media-section", { y: 40, opacity: 0, duration: 0.4, ease: "power2.in" }, "<")
+        .to(".command-panel", { scale: 0.95, opacity: 0, filter: "blur(8px)", duration: 0.5, ease: "power2.in" }, "<+0.1")
+        .to(".hex-avatar-wrapper", { scale: 0, rotation: 45, opacity: 0, duration: 0.4 }, "<");
     }
 
     function triggerAlert(index) {
       currentDonation = mockDonations[index];
       hideAlert();
-      setTimeout(() => showAlert(currentDonation), 1300);
+      setTimeout(() => showAlert(currentDonation), 800);
     }
 
     // ============================================================
