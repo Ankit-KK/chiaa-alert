@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Latifa Command Center Alert</title>
+  <title>Latifa Premium Alert Engine</title>
   
-  <!-- Premium Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   
-  <!-- GSAP Animation Engine -->
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
   <style>
     /* ============================================================
-       GLOBAL — Transparent for OBS
+       GLOBAL & RESET
        ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -28,12 +30,13 @@
       width: 100%; height: 100%;
       display: flex; align-items: center; justify-content: center;
       background: transparent;
+      position: relative;
     }
 
     /* Demo Controls */
     .demo-controls {
       display: none; position: fixed; top: 16px; left: 16px; z-index: 9999;
-      background: rgba(10, 10, 15, 0.95); border: 1px solid #8A2BE2;
+      background: rgba(10, 10, 15, 0.9); border: 1px solid #8A2BE2;
       padding: 14px 18px; border-radius: 4px;
       font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #fff;
       backdrop-filter: blur(8px);
@@ -45,283 +48,176 @@
       color: white; border: none; padding: 6px 12px; margin: 3px 4px 3px 0;
       border-radius: 2px; font-family: 'Rajdhani', sans-serif; font-weight: 700;
       cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-      transition: filter 0.2s;
     }
     .demo-controls button:hover { filter: brightness(1.3); }
 
     /* ============================================================
-       TOKENS & BASE
+       ALERT CONTAINER & LAYERS
        ============================================================ */
-    .latifa-alert {
-      --c-purple: #8A2BE2;
-      --c-pink: #FF007F;
-      --c-cyan: #00FFFF;
-      --c-dark: #0A0A0F;
-      --c-graphite: #1A1A24;
-      --c-glass: rgba(20, 20, 30, 0.65);
-      --c-glass-border: rgba(138, 43, 226, 0.4);
-      --c-text: #FFFFFF;
-      --c-text-dim: #A0A0B0;
-
+    .alert-engine {
       position: relative;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      pointer-events: none;
-      width: 580px;
-      /* Initial state for GSAP to animate from */
-      opacity: 0; 
+      width: 600px;
+      height: 450px; /* Accommodates media below */
+      opacity: 0; /* Hidden until GSAP starts */
     }
 
-    /* ============================================================
-       IMPACT FLASH & SHAKE
-       ============================================================ */
-    .impact-flash {
-      position: absolute; inset: -100px;
-      background: radial-gradient(circle, rgba(138, 43, 226, 0.4) 0%, transparent 70%);
-      opacity: 0; pointer-events: none; z-index: 100;
-    }
-
-    /* ============================================================
-       COMMAND PANEL
-       ============================================================ */
-    .command-panel {
-      position: relative;
-      width: 580px;
-      height: 160px;
-      background: linear-gradient(135deg, var(--c-glass) 0%, rgba(10, 10, 15, 0.85) 100%);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%);
-      border: 1px solid var(--c-glass-border);
-      box-shadow: 0 0 30px rgba(138, 43, 226, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
-      display: flex;
-      padding: 20px 24px 20px 120px;
-      gap: 16px;
-      z-index: 10;
-      transform-origin: center center;
-    }
-
-    /* Glass sheen sweep effect */
-    .glass-sheen {
-      position: absolute; inset: 0;
-      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
-      transform: translateX(-100%);
-      pointer-events: none;
-      z-index: 11;
-    }
-
-    .top-border {
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--c-cyan), var(--c-purple), var(--c-pink));
-      transform-origin: left;
-      transform: scaleX(0);
-      z-index: 12;
-      box-shadow: 0 0 10px var(--c-cyan);
-    }
-
-    /* ============================================================
-       HEXAGONAL AVATAR
-       ============================================================ */
-    .hex-avatar-wrapper {
+    /* PixiJS Canvas sits on top for additive particles */
+    #particle-canvas {
       position: absolute;
-      left: 24px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 76px;
-      height: 84px;
-      z-index: 12;
-    }
-    .hex-ring {
-      position: absolute; inset: -4px;
-      background: conic-gradient(from 0deg, transparent 0%, var(--c-cyan) 25%, var(--c-pink) 50%, transparent 75%);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      filter: blur(2px);
-    }
-    .hex-inner {
-      position: absolute; inset: 2px;
-      background: var(--c-dark);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .hex-inner img { width: 115%; height: 115%; object-fit: cover; }
-
-    .energy-ripple {
-      position: absolute; inset: 0;
-      border: 2px solid var(--c-cyan);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      opacity: 0;
-      transform: scale(0.8);
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
+      z-index: 50;
     }
 
     /* ============================================================
-       INFO BLOCK
+       SVG ASSET LAYERS (Mimicking Figma/AE Export)
        ============================================================ */
-    .info-block {
-      flex: 1;
+    .asset-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* SVG Filters for true Bloom/Glow */
+    .svg-filters { position: absolute; width: 0; height: 0; }
+
+    /* ============================================================
+       TYPOGRAPHY & CONTENT
+       ============================================================ */
+    .content-layer {
+      position: absolute;
+      top: 24px; left: 120px; right: 24px; bottom: 24px;
+      z-index: 20;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 6px;
-      min-width: 0;
+      gap: 8px;
     }
 
     .donor-name {
       font-family: 'Orbitron', sans-serif;
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--c-text);
-      letter-spacing: 1px;
+      font-size: 28px;
+      font-weight: 900;
+      color: #FFFFFF;
       text-transform: uppercase;
+      letter-spacing: 1.5px;
       display: flex;
       flex-wrap: wrap;
+      overflow: hidden; /* For mask reveal */
     }
-    .donor-name .char {
+    .char-wrap {
       display: inline-block;
+      overflow: hidden;
+    }
+    .char {
+      display: inline-block;
+      transform: translateY(100%);
+      filter: blur(6px);
       opacity: 0;
-      transform: translateY(15px);
-      filter: blur(4px);
     }
-    .donor-name .char.cyan-highlight {
-      color: var(--c-cyan);
-      text-shadow: 0 0 10px var(--c-cyan);
-    }
+    .char.cyan { color: #00FFFF; text-shadow: 0 0 15px rgba(0,255,255,0.8); }
 
-    .amount-block {
-      position: relative;
-      display: inline-flex;
-      align-items: baseline;
-      gap: 10px;
+    .amount-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
     }
     .donation-amount {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 44px;
+      font-size: 48px;
       font-weight: 700;
-      color: var(--c-text);
+      color: #FFFFFF;
       line-height: 1;
       letter-spacing: 1px;
-      transform-origin: left center;
     }
-    .amount-bloom {
-      position: absolute;
-      inset: -15px -25px;
-      background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.7) 0%, transparent 70%);
-      border-radius: 50%;
-      opacity: 0;
-      transform: scale(0.5);
-      z-index: -1;
-      filter: blur(10px);
-    }
-
-    .type-module {
+    .type-badge {
       font-family: 'Orbitron', sans-serif;
       font-size: 11px;
       font-weight: 700;
-      color: var(--c-cyan);
-      background: rgba(0, 255, 255, 0.08);
-      border: 1px solid rgba(0, 255, 255, 0.3);
-      padding: 4px 12px;
+      color: #00FFFF;
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      padding: 4px 10px;
       letter-spacing: 2px;
       clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
       opacity: 0;
-      transform: translateX(-15px);
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+      transform: translateX(-20px);
     }
 
-    .message-glass {
-      margin-top: 6px;
+    .message-box {
+      margin-top: 8px;
       font-family: 'Exo 2', sans-serif;
-      font-size: 15px;
-      color: var(--c-text-dim);
-      background: rgba(255, 255, 255, 0.04);
-      border-left: 2px solid var(--c-pink);
-      padding: 8px 14px;
+      font-size: 16px;
+      color: #D0D0E0;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid #FF007F;
+      padding: 10px 16px;
       backdrop-filter: blur(4px);
       opacity: 0;
-      transform: translateY(15px);
+      transform: translateY(20px);
       max-width: 100%;
       word-wrap: break-word;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     /* ============================================================
        MEDIA SECTION
        ============================================================ */
-    .media-section {
-      position: relative;
-      width: 500px;
-      margin-top: -12px;
-      z-index: 5;
+    .media-container {
+      position: absolute;
+      top: 170px; left: 50px; right: 50px; bottom: 0;
+      z-index: 15;
       opacity: 0;
-      transform: translateY(50px);
+      transform: translateY(40px) scale(0.95);
     }
-
-    .media-frame-svg {
-      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;
+    .media-frame {
+      width: 100%; height: 100%;
+      position: relative;
     }
-    .media-border-path {
-      fill: none;
-      stroke: var(--c-purple);
-      stroke-width: 2;
-      stroke-dasharray: 1200;
-      stroke-dashoffset: 1200;
-      filter: drop-shadow(0 0 6px var(--c-purple));
-    }
-
-    .media-corner {
-      position: absolute; width: 18px; height: 18px;
-      border: 2px solid var(--c-cyan);
-      opacity: 0; z-index: 7;
-      box-shadow: 0 0 8px var(--c-cyan);
-    }
-    .mc-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-    .mc-tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
-    .mc-bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
-    .mc-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
-
     .media-content {
-      width: 100%; height: 240px;
-      background: var(--c-dark);
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+      width: 100%; height: 100%;
+      background: #0A0A0F;
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
       overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(138, 43, 226, 0.2);
+      border: 1px solid rgba(138, 43, 226, 0.3);
     }
     .media-content img, .media-content video {
       width: 100%; height: 100%; object-fit: contain; display: block;
     }
-
-    /* ============================================================
-       AMBIENT PARTICLES
-       ============================================================ */
-    .particles-container {
-      position: absolute; inset: -40px; pointer-events: none; z-index: 20; overflow: visible;
-    }
-    .particle {
-      position: absolute; width: 3px; height: 3px;
-      background: var(--c-cyan); border-radius: 50%;
-      opacity: 0; box-shadow: 0 0 6px var(--c-cyan);
-    }
-    .particle.pink { background: var(--c-pink); box-shadow: 0 0 6px var(--c-pink); }
-    .particle.purple { background: var(--c-purple); box-shadow: 0 0 6px var(--c-purple); }
-
-    /* ============================================================
-       EXIT ANIMATION
-       ============================================================ */
-    .exit-scan {
+    
+    /* Glass reflection sweep */
+    .media-glass-sweep {
       position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent, var(--c-purple), transparent);
-      opacity: 0; z-index: 100; pointer-events: none;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+      transform: translateX(-100%);
+      pointer-events: none;
+      z-index: 16;
+    }
+
+    /* ============================================================
+       LOTTIE OVERLAY
+       ============================================================ */
+    .lottie-burst {
+      position: absolute;
+      top: 50%; left: 60px;
+      transform: translate(-50%, -50%);
+      width: 120px; height: 120px;
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- PixiJS Canvas will be injected here -->
+  </div>
 
   <div class="demo-controls" id="demoControls">
-    <h3>Latifa Command Center</h3>
+    <h3>Latifa Premium Engine</h3>
     <button onclick="triggerAlert(0)">Test: MEDIA</button>
     <button onclick="triggerAlert(1)">Test: TEXT</button>
     <button onclick="triggerAlert(2)">Test: VOICE</button>
@@ -351,11 +247,145 @@
 
     let currentDonation = mockDonations[0];
     let masterTimeline = null;
-    let hideTimer = null;
+    let pixiApp = null;
+    let particleEmitter = null;
     let countInterval = null;
 
     // ============================================================
-    // RENDER HTML
+    // PIXIJS PARTICLE SYSTEM SETUP
+    // ============================================================
+    function initPixi() {
+      const root = document.getElementById('root');
+      pixiApp = new PIXI.Application({
+        width: 800,
+        height: 600,
+        backgroundAlpha: 0,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true
+      });
+      pixiApp.view.id = 'particle-canvas';
+      root.appendChild(pixiApp.view);
+
+      // Generate a glowing circle texture procedurally (no external image needed)
+      const canvas = document.createElement('canvas');
+      canvas.width = 64; canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      gradient.addColorStop(0.2, 'rgba(0, 255, 255, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(138, 43, 226, 0.4)');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 64, 64);
+      const texture = PIXI.Texture.from(canvas);
+
+      // Create emitter container
+      const emitterContainer = new PIXI.Container();
+      pixiApp.stage.addChild(emitterContainer);
+      emitterContainer.x = 400;
+      emitterContainer.y = 300;
+
+      // Simple custom particle logic (mimicking an emitter for zero-dependency)
+      const particles = [];
+      const maxParticles = 60;
+      
+      for (let i = 0; i < maxParticles; i++) {
+        const sprite = new PIXI.Sprite(texture);
+        sprite.anchor.set(0.5);
+        sprite.blendMode = PIXI.BLEND_MODES.ADD; // TRUE ADDITIVE BLENDING
+        sprite.alpha = 0;
+        sprite.scale.set(0);
+        emitterContainer.addChild(sprite);
+        particles.push({
+          sprite,
+          active: false,
+          life: 0,
+          maxLife: 1,
+          vx: 0, vy: 0,
+          startX: 0, startY: 0
+        });
+      }
+
+      // Expose a function to burst particles
+      window.triggerParticleBurst = (x, y, count = 20, colorTint = 0xFFFFFF) => {
+        let spawned = 0;
+        particles.forEach(p => {
+          if (!p.active && spawned < count) {
+            p.active = true;
+            p.life = 0;
+            p.maxLife = 1.5 + Math.random();
+            p.sprite.x = x;
+            p.sprite.y = y;
+            p.startX = x;
+            p.startY = y;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1 + Math.random() * 3;
+            p.vx = Math.cos(angle) * speed;
+            p.vy = Math.sin(angle) * speed;
+            p.sprite.tint = colorTint;
+            p.sprite.scale.set(0.2 + Math.random() * 0.5);
+            p.sprite.alpha = 1;
+            spawned++;
+          }
+        });
+      };
+
+      // Expose a function to start ambient floating particles
+      window.startAmbientParticles = () => {
+        particles.forEach((p, i) => {
+          if (!p.active && i % 3 === 0) { // Stagger activation
+            setTimeout(() => {
+              p.active = true;
+              p.life = 0;
+              p.maxLife = 3 + Math.random() * 2;
+              p.sprite.x = 200 + Math.random() * 400;
+              p.sprite.y = 450;
+              p.startX = p.sprite.x;
+              p.startY = p.sprite.y;
+              p.vx = (Math.random() - 0.5) * 0.5;
+              p.vy = -1 - Math.random() * 1.5; // Float up
+              p.sprite.tint = Math.random() > 0.5 ? 0x00FFFF : 0xFF007F;
+              p.sprite.scale.set(0.3 + Math.random() * 0.4);
+              p.sprite.alpha = 0.8;
+            }, i * 100);
+          }
+        });
+      };
+
+      // Pixi Ticker for particle physics
+      pixiApp.ticker.add((delta) => {
+        particles.forEach(p => {
+          if (p.active) {
+            p.life += delta / 60;
+            p.sprite.x += p.vx * delta;
+            p.sprite.y += p.vy * delta;
+            
+            // Fade and shrink
+            const progress = p.life / p.maxLife;
+            p.sprite.alpha = 1 - progress;
+            p.sprite.scale.set(p.sprite.scale.x * 0.99);
+
+            if (p.life >= p.maxLife) {
+              p.active = false;
+              p.sprite.alpha = 0;
+              // If ambient, respawn at bottom
+              if (window.ambientActive) {
+                p.life = 0;
+                p.sprite.x = 200 + Math.random() * 400;
+                p.sprite.y = 450;
+                p.vx = (Math.random() - 0.5) * 0.5;
+                p.vy = -1 - Math.random() * 1.5;
+                p.sprite.alpha = 0.8;
+                p.sprite.scale.set(0.3 + Math.random() * 0.4);
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // ============================================================
+    // RENDER HTML (Layered Asset Architecture)
     // ============================================================
     function render(donation) {
       const badge = kindLabel(donation);
@@ -364,175 +394,253 @@
       const showMedia = Boolean(mediaUrl);
       
       const nameStr = (donation.name || 'Anonymous').trim().toUpperCase();
+      // Wrap each char for mask/blur reveal
       const nameChars = nameStr.split('').map((char, i) => {
         const isLast = i === nameStr.length - 1;
-        return `<span class="char ${isLast ? 'cyan-highlight' : ''}">${char === ' ' ? '&nbsp;' : char}</span>`;
+        return `<span class="char-wrap"><span class="char ${isLast ? 'cyan' : ''}">${char === ' ' ? '&nbsp;' : char}</span></span>`;
       }).join('');
 
       const mediaHtml = showMedia ? `
-        <div class="media-section">
-          <svg class="media-frame-svg" viewBox="0 0 500 240" preserveAspectRatio="none">
-            <path class="media-border-path" d="M 2 2 L 498 2 L 498 224 L 482 238 L 2 238 Z" />
-          </svg>
-          <div class="media-corner mc-tl"></div>
-          <div class="media-corner mc-tr"></div>
-          <div class="media-corner mc-bl"></div>
-          <div class="media-corner mc-br"></div>
-          <div class="media-content">
-            ${isVideo 
-              ? `<video src="${mediaUrl}" autoplay loop muted playsinline></video>` 
-              : `<img src="${mediaUrl}" alt="donation media" />`}
+        <div class="media-container">
+          <div class="media-frame">
+            <svg width="100%" height="100%" viewBox="0 0 500 240" preserveAspectRatio="none">
+              <!-- Designed Media Frame Border -->
+              <path class="media-border" d="M 2 2 L 498 2 L 498 224 L 482 238 L 2 238 Z" 
+                    fill="none" stroke="#8A2BE2" stroke-width="2" 
+                    stroke-dasharray="1200" stroke-dashoffset="1200"
+                    style="filter: url(#glow-purple);" />
+            </svg>
+            <div class="media-corner mc-tl" style="position:absolute; top:-2px; left:-2px; width:20px; height:20px; border-top:3px solid #00FFFF; border-left:3px solid #00FFFF; opacity:0;"></div>
+            <div class="media-corner mc-tr" style="position:absolute; top:-2px; right:-2px; width:20px; height:20px; border-top:3px solid #00FFFF; border-right:3px solid #00FFFF; opacity:0;"></div>
+            <div class="media-corner mc-bl" style="position:absolute; bottom:-2px; left:-2px; width:20px; height:20px; border-bottom:3px solid #00FFFF; border-left:3px solid #00FFFF; opacity:0;"></div>
+            <div class="media-corner mc-br" style="position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; border-bottom:3px solid #00FFFF; border-right:3px solid #00FFFF; opacity:0;"></div>
+            
+            <div class="media-content">
+              ${isVideo 
+                ? `<video src="${mediaUrl}" autoplay loop muted playsinline></video>` 
+                : `<img src="${mediaUrl}" alt="donation media" />`}
+            </div>
+            <div class="media-glass-sweep"></div>
           </div>
         </div>
       ` : '';
 
-      // Generate randomized particles
-      const particles = Array.from({length: 12}).map((_, i) => {
-        const type = ['','pink','purple'][Math.floor(Math.random()*3)];
-        const left = Math.random() * 100;
-        const delay = Math.random() * 2;
-        const duration = 3 + Math.random() * 3;
-        return `<div class="particle ${type}" style="left:${left}%; bottom:0; animation-delay:${delay}s;"></div>`;
-      }).join('');
-
       return `
-        <div class="latifa-alert">
-          <div class="impact-flash"></div>
-          <div class="exit-scan"></div>
-          
-          <div class="command-panel">
-            <div class="top-border"></div>
-            <div class="glass-sheen"></div>
+        <!-- SVG FILTERS FOR TRUE BLOOM -->
+        <svg class="svg-filters">
+          <defs>
+            <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feColorMatrix in="blur" type="matrix" values="
+                0 0 0 0 0
+                0 1 0 0 1
+                0 0 1 0 1
+                0 0 0 1 0" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="glow-purple" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+        </svg>
+
+        <div class="alert-engine">
+          <!-- Lottie Burst Placeholder -->
+          <div class="lottie-burst">
+            <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_w51pcehl.json"  background="transparent"  speed="1.5"  loop  autoplay></lottie-player>
+          </div>
+
+          <!-- LAYER 1: Main Tactical Frame (Designed SVG Asset) -->
+          <svg class="asset-layer" viewBox="0 0 600 160" style="z-index: 10;">
+            <!-- Back Glow -->
+            <path d="M 20 10 L 580 10 L 580 140 L 560 150 L 20 150 Z" fill="rgba(138, 43, 226, 0.15)" filter="url(#glow-purple)" class="frame-glow" opacity="0" />
             
-            <div class="hex-avatar-wrapper">
-              <div class="energy-ripple"></div>
-              <div class="hex-ring"></div>
-              <div class="hex-inner">
-                <img src="/latifa_logo.png" alt="Latifa" onerror="this.style.display='none'" />
-              </div>
-            </div>
+            <!-- Main Chassis -->
+            <path d="M 20 10 L 580 10 L 580 140 L 560 150 L 20 150 Z" 
+                  fill="url(#chassisGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1" 
+                  class="frame-chassis" opacity="0" transform-origin="center" />
             
-            <div class="info-block">
-              <div class="donor-name">${nameChars}</div>
-              <div class="amount-block">
-                <div class="donation-amount" id="amountDisplay">₹0</div>
-                <div class="amount-bloom"></div>
-                <div class="type-module">${badge}</div>
-              </div>
-              ${donation.message ? `<div class="message-glass">"${donation.message}"</div>` : ''}
+            <!-- Inner Accent Lines -->
+            <path d="M 30 20 L 100 20 M 570 20 L 570 130 L 550 140 L 30 140" 
+                  fill="none" stroke="#00FFFF" stroke-width="1.5" stroke-opacity="0.6"
+                  class="frame-accent" stroke-dasharray="300" stroke-dashoffset="300" />
+
+            <!-- Corner Brackets (Separate groups for independent animation) -->
+            <g class="corner-bracket tl" transform="translate(15, 15)" opacity="0">
+              <path d="M 0 15 L 0 0 L 15 0" fill="none" stroke="#FF007F" stroke-width="3" filter="url(#glow-cyan)" />
+            </g>
+            <g class="corner-bracket tr" transform="translate(585, 15)" opacity="0">
+              <path d="M 0 0 L 15 0 L 15 15" fill="none" stroke="#FF007F" stroke-width="3" filter="url(#glow-cyan)" />
+            </g>
+            <g class="corner-bracket bl" transform="translate(15, 155)" opacity="0">
+              <path d="M 0 -15 L 0 0 L 15 0" fill="none" stroke="#FF007F" stroke-width="3" filter="url(#glow-cyan)" />
+            </g>
+            <g class="corner-bracket br" transform="translate(565, 155)" opacity="0">
+              <path d="M -5 -15 L -5 0 L 0 0" fill="none" stroke="#FF007F" stroke-width="3" filter="url(#glow-cyan)" />
+            </g>
+
+            <defs>
+              <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(26, 26, 36, 0.9)" />
+                <stop offset="100%" stop-color="rgba(10, 10, 15, 0.95)" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- LAYER 2: Hex Avatar -->
+          <div class="asset-layer" style="z-index: 15; left: 24px; top: 50%; transform: translateY(-50%); width: 80px; height: 80px;">
+            <svg viewBox="0 0 80 80" style="width:100%; height:100%; overflow: visible;">
+              <!-- Rotating Energy Ring -->
+              <path class="hex-ring" d="M 40 2 L 75 22 L 75 58 L 40 78 L 5 58 L 5 22 Z" 
+                    fill="none" stroke="url(#ringGrad)" stroke-width="3" 
+                    filter="url(#glow-cyan)" stroke-dasharray="200" stroke-dashoffset="200" />
+              <!-- Inner Mask -->
+              <clipPath id="hexClip">
+                <path d="M 40 6 L 71 24 L 71 56 L 40 74 L 9 56 L 9 24 Z" />
+              </clipPath>
+              <image href="/latifa_logo.png" width="80" height="80" clip-path="url(#hexClip)" class="avatar-img" opacity="0" />
+              
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00FFFF" />
+                  <stop offset="50%" stop-color="#8A2BE2" />
+                  <stop offset="100%" stop-color="#FF007F" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- LAYER 3: Content -->
+          <div class="content-layer">
+            <div class="donor-name">${nameChars}</div>
+            <div class="amount-row">
+              <div class="donation-amount" id="amountDisplay">₹0</div>
+              <div class="type-badge">${badge}</div>
             </div>
+            ${donation.message ? `<div class="message-box">"${donation.message}"</div>` : ''}
           </div>
 
           ${mediaHtml}
-
-          <div class="particles-container">${particles}</div each>
         </div>
       `;
     }
 
     // ============================================================
-    // GSAP ANIMATION CHOREOGRAPHY
+    // GSAP STUDIO-LEVEL CHOREOGRAPHY
     // ============================================================
     function showAlert(donation) {
       if (masterTimeline) masterTimeline.kill();
-      clearTimeout(hideTimer);
       clearInterval(countInterval);
+      window.ambientActive = false; // Stop old ambient particles
       
       const root = document.getElementById('root');
-      root.innerHTML = render(donation);
+      // Keep canvas, replace HTML
+      const canvas = document.getElementById('particle-canvas');
+      root.innerHTML = '';
+      if (canvas) root.appendChild(canvas);
       
-      const alertEl = document.querySelector('.latifa-alert');
+      root.insertAdjacentHTML('beforeend', render(donation));
       
-      // Reveal main container instantly
-      gsap.set(alertEl, { opacity: 1 });
+      const engine = document.querySelector('.alert-engine');
+      gsap.set(engine, { opacity: 1 });
 
       masterTimeline = gsap.timeline({
-        defaults: { ease: "power3.out" },
-        onComplete: () => {
-          // Start idle ambient animations after entrance
-          startIdleAnimations();
-        }
+        defaults: { ease: "power3.out" }
       });
 
       const targetAmount = donation.amount;
       const symbol = CURRENCY_SYMBOLS[donation.currency || 'INR'] || '₹';
 
-      // 1. ANTICIPATION: Micro flash and screen shake
-      masterTimeline
-        .to(".impact-flash", { opacity: 0.6, duration: 0.1, yoyo: true, repeat: 1 })
-        .to(".command-panel", { x: "-=2", duration: 0.05, yoyo: true, repeat: 3 }, "<");
+      // 0.00s: IMPACT & LOTTIE BURST
+      masterTimeline.call(() => {
+        window.triggerParticleBurst(100, 80, 30, 0x00FFFF); // Pixi burst at logo
+      }, null, 0);
+      
+      masterTimeline.to(".lottie-burst", { opacity: 1, duration: 0.1 }, 0);
+      masterTimeline.call(() => {
+        document.querySelector('lottie-player').play();
+      }, null, 0.1);
 
-      // 2. ASSEMBLY: Panel slides in with elastic overshoot
-      masterTimeline.fromTo(".command-panel",
-        { scale: 0.92, opacity: 0, y: 30 },
-        { scale: 1, opacity: 1, y: 0, duration: 0.9, ease: "back.out(1.2)" }, "-=0.1"
+      // 0.10s: FRAME ASSEMBLY (Elastic overshoot)
+      masterTimeline.fromTo(".frame-chassis", 
+        { scale: 0.9, opacity: 0, transformOrigin: "center center" },
+        { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.2)" }, 0.1
+      );
+      masterTimeline.to(".frame-glow", { opacity: 1, duration: 0.5 }, 0.15);
+
+      // 0.20s: ACCENTS & CORNERS (Staggered lock-in)
+      masterTimeline.to(".frame-accent", { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 0.2);
+      masterTimeline.fromTo(".corner-bracket", 
+        { opacity: 0, scale: 1.5, transformOrigin: "center center" },
+        { opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: "back.out(2.5)" }, 0.25
       );
 
-      // 3. SECONDARY MOTION: Border draws & glass sheen sweeps across
-      masterTimeline
-        .to(".top-border", { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, "-=0.6")
-        .to(".glass-sheen", { x: "150%", duration: 0.9, ease: "power1.inOut" }, "-=0.5");
+      // 0.30s: LOGO REVEAL (Drop + Ring Draw)
+      masterTimeline.fromTo(".avatar-img", 
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.6)" }, 0.3
+      );
+      masterTimeline.to(".hex-ring", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 0.35);
 
-      // 4. LOGO: Drops with heavy bounce, followed by energy ripple
-      masterTimeline
-        .fromTo(".hex-avatar-wrapper",
-          { scale: 0, rotation: -45, opacity: 0 },
-          { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "elastic.out(1, 0.6)" }, "-=0.6"
-        )
-        .to(".energy-ripple", { scale: 1.6, opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.4");
-
-      // 5. TEXT: Staggered character reveal with blur clear
-      masterTimeline.fromTo(".donor-name .char",
-        { opacity: 0, y: 15, filter: "blur(4px)" },
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, stagger: 0.03, ease: "back.out(1.5)" }, "-=0.5"
+      // 0.40s: TYPOGRAPHY (Blur mask reveal)
+      masterTimeline.fromTo(".char", 
+        { y: "100%", filter: "blur(6px)", opacity: 0 },
+        { y: "0%", filter: "blur(0px)", opacity: 1, duration: 0.5, stagger: 0.03, ease: "back.out(1.5)" }, 0.4
       );
 
-      // 6. AMOUNT: Punches in + radial bloom
-      masterTimeline
-        .fromTo(".donation-amount",
-          { scale: 0.5, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, "-=0.3"
-        )
-        .to(".amount-bloom", { scale: 1.3, opacity: 0.7, duration: 0.7, ease: "power2.out" }, "<");
-
-      // 7. TYPE MODULE: Powers on (slide + brightness drop)
-      masterTimeline.fromTo(".type-module",
-        { x: -20, opacity: 0, filter: "brightness(2) blur(2px)" },
-        { x: 0, opacity: 1, filter: "brightness(1) blur(0px)", duration: 0.5, ease: "power2.out" }, "-=0.3"
+      // 0.50s: AMOUNT & BADGE (Punch in + Bloom)
+      masterTimeline.fromTo(".donation-amount", 
+        { scale: 0.5, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }, 0.5
+      );
+      masterTimeline.fromTo(".type-badge", 
+        { x: -20, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.55
       );
 
-      // 8. MESSAGE: Glass panel slides up
-      masterTimeline.fromTo(".message-glass",
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.2"
-      );
-
-      // 9. MEDIA: Rises, frame draws, corners snap with micro-bounce
-      if (document.querySelector('.media-section')) {
-        masterTimeline
-          .fromTo(".media-section",
-            { y: 60, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4"
-          )
-          .to(".media-border-path", { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, "-=0.6")
-          .fromTo(".media-corner", 
-            { scale: 1.8, opacity: 0 }, 
-            { scale: 1, opacity: 1, duration: 0.4, stagger: 0.06, ease: "back.out(2.5)" }, "-=0.5"
-          );
+      // 0.60s: MESSAGE GLASS
+      if (document.querySelector('.message-box')) {
+        masterTimeline.fromTo(".message-box", 
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.6
+        );
       }
 
-      // 10. AMOUNT COUNT-UP (Runs concurrently with entrance)
-      const duration = 1500;
+      // 0.70s: MEDIA REVEAL (If exists)
+      if (document.querySelector('.media-container')) {
+        masterTimeline.fromTo(".media-container", 
+          { y: 40, opacity: 0, scale: 0.95 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, 0.7
+        );
+        masterTimeline.to(".media-border", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 0.8);
+        masterTimeline.fromTo(".media-corner", 
+          { opacity: 0, scale: 2 }, 
+          { opacity: 1, scale: 1, duration: 0.3, stagger: 0.05, ease: "back.out(3)" }, 0.9
+        );
+        masterTimeline.to(".media-glass-sweep", { x: "150%", duration: 0.8, ease: "power1.inOut" }, 1.0);
+      }
+
+      // 1.2s: TRANSITION TO IDLE
+      masterTimeline.call(() => {
+        window.ambientActive = true;
+        window.startAmbientParticles();
+        
+        // Continuous subtle animations
+        gsap.to(".hex-ring", { rotation: 360, duration: 10, repeat: -1, ease: "linear", transformOrigin: "center center" });
+        gsap.to(".alert-engine", { y: -5, duration: 4, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      }, null, 1.2);
+
+      // Amount Count-Up (concurrent)
+      const duration = 1200;
       const startTime = performance.now();
       const amountEl = document.getElementById('amountDisplay');
-      
       countInterval = setInterval(() => {
         const elapsed = performance.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
         const current = Math.floor(ease * targetAmount);
         if (amountEl) amountEl.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
-        
         if (progress >= 1) {
           clearInterval(countInterval);
           if (amountEl) amountEl.textContent = fmt(donation);
@@ -540,71 +648,47 @@
       }, 16);
     }
 
-    // ============================================================
-    // IDLE & EXIT ANIMATIONS
-    // ============================================================
-    function startIdleAnimations() {
-      const alertEl = document.querySelector('.latifa-alert');
-      if (!alertEl) return;
-
-      // Continuous subtle float for the whole alert
-      gsap.to(".command-panel", { y: -3, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut" });
-      
-      // Continuous ring rotation
-      gsap.to(".hex-ring", { rotation: 360, duration: 8, repeat: -1, ease: "linear" });
-
-      // Floating particles
-      gsap.utils.toArray(".particle").forEach(p => {
-        gsap.to(p, {
-          y: -250 - Math.random() * 100,
-          x: (Math.random() - 0.5) * 40,
-          opacity: 0.8,
-          duration: 3 + Math.random() * 3,
-          repeat: -1,
-          delay: Math.random() * 2,
-          ease: "none",
-          onRepeat: () => {
-            gsap.set(p, { y: 0, x: 0, opacity: 0 });
-          }
-        });
-      });
-    }
-
     function hideAlert() {
-      const alertEl = document.querySelector('.latifa-alert');
-      if (!alertEl) return;
+      const engine = document.querySelector('.alert-engine');
+      if (!engine) return;
       
       clearInterval(countInterval);
       if (masterTimeline) masterTimeline.kill();
+      window.ambientActive = false;
 
-      // Exit choreography
+      // Fast, layered exit
       const exitTl = gsap.timeline({
         onComplete: () => {
+          // Clear HTML but keep canvas
+          const canvas = document.getElementById('particle-canvas');
           document.getElementById('root').innerHTML = '';
+          if (canvas) document.getElementById('root').appendChild(canvas);
         }
       });
 
       exitTl
-        .to(".exit-scan", { opacity: 0.6, duration: 0.1, yoyo: true, repeat: 1 })
-        .to(".media-section", { y: 40, opacity: 0, duration: 0.4, ease: "power2.in" }, "<")
-        .to(".command-panel", { scale: 0.95, opacity: 0, filter: "blur(8px)", duration: 0.5, ease: "power2.in" }, "<+0.1")
-        .to(".hex-avatar-wrapper", { scale: 0, rotation: 45, opacity: 0, duration: 0.4 }, "<");
+        .to(".media-container", { y: 30, opacity: 0, duration: 0.3 }, 0)
+        .to(".content-layer", { y: -10, opacity: 0, duration: 0.3 }, 0.05)
+        .to(".corner-bracket", { scale: 0, opacity: 0, duration: 0.3, stagger: 0.02 }, 0.1)
+        .to(".frame-chassis, .frame-glow", { scale: 1.05, opacity: 0, filter: "blur(10px)", duration: 0.4 }, 0.15)
+        .to(".avatar-img", { scale: 0, opacity: 0, duration: 0.3 }, 0.2);
     }
 
     function triggerAlert(index) {
       currentDonation = mockDonations[index];
       hideAlert();
-      setTimeout(() => showAlert(currentDonation), 800);
+      setTimeout(() => showAlert(currentDonation), 600);
     }
 
     // ============================================================
     // INIT
     // ============================================================
     window.addEventListener('DOMContentLoaded', () => {
+      initPixi();
       if (new URLSearchParams(window.location.search).get('demo') === '1') {
         document.getElementById('demoControls').classList.add('visible');
       }
-      setTimeout(() => showAlert(currentDonation), 300);
+      setTimeout(() => showAlert(currentDonation), 500);
     });
   </script>
 </body>
