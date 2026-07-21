@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Latifa Airdrop Alert</title>
+  <title>Latifa Neon Signature Alert</title>
+  
+  <!-- Premium Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
   
+  <!-- GSAP & PixiJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
 
@@ -25,240 +28,224 @@
       width: 100%; height: 100%;
       display: flex; align-items: center; justify-content: center;
       background: transparent;
-      perspective: 1200px; /* Critical for 3D lid opening */
     }
 
     .demo-controls {
       display: none; position: fixed; top: 16px; left: 16px; z-index: 9999;
-      background: rgba(0, 0, 0, 0.8); border: 1px solid #FFD700;
-      padding: 12px; border-radius: 4px; font-family: 'Rajdhani', sans-serif;
+      background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px; border-radius: 8px; font-family: 'Montserrat', sans-serif;
+      backdrop-filter: blur(10px);
     }
     .demo-controls.visible { display: block; }
     .demo-controls button {
-      background: #FFD700; color: #000; border: none; padding: 6px 12px;
-      margin: 2px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+      background: linear-gradient(135deg, #F700FF, #00F0FF);
+      color: #000; border: none; padding: 8px 16px; margin: 4px;
+      border-radius: 20px; font-weight: 700; cursor: pointer;
+      font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
     }
 
     /* ============================================================
-       THE HERO ELEMENT: AIRDROP CRATE
+       MAIN CONTAINER
        ============================================================ */
-    .crate-stage {
+    .signature-stage {
       position: relative;
-      width: 500px;
-      height: 400px;
-      transform-style: preserve-3d;
+      width: 600px;
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       opacity: 0; /* Hidden until GSAP starts */
     }
 
-    /* The physical crate body */
-    .crate-body {
+    /* ============================================================
+       THE HERO: GLOWING SIGNATURE "L"
+       ============================================================ */
+    .signature-container {
       position: absolute;
-      bottom: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 420px;
-      height: 220px;
-      background: linear-gradient(180deg, #2A2A35 0%, #1A1A24 100%);
-      border: 2px solid #3A3A45;
-      border-radius: 4px;
-      box-shadow: 
-        inset 0 0 20px rgba(0,0,0,0.8),
-        0 20px 40px rgba(0,0,0,0.6);
+      left: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 180px;
+      height: 180px;
       z-index: 10;
-      overflow: hidden;
-    }
-
-    /* Rugged corner brackets */
-    .crate-corner {
-      position: absolute; width: 24px; height: 24px;
-      background: #111; border: 2px solid #555;
-      z-index: 12;
-    }
-    .crate-corner.tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-    .crate-corner.tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
-    .crate-corner.bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
-    .crate-corner.br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
-
-    /* Caution stripes */
-    .crate-stripe {
-      position: absolute; top: 0; bottom: 0; width: 40px;
-      background: repeating-linear-gradient(45deg, #FFD700, #FFD700 10px, #1A1A24 10px, #1A1A24 20px);
-      opacity: 0.8;
-      z-index: 11;
-    }
-    .crate-stripe.left { left: 20px; }
-    .crate-stripe.right { right: 20px; }
-
-    /* Mechanical Latches */
-    .latch {
-      position: absolute; top: 40%; 
-      width: 30px; height: 40px;
-      background: linear-gradient(90deg, #555, #888, #555);
-      border: 1px solid #222;
-      border-radius: 4px;
-      z-index: 13;
-      transform-origin: top center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-    }
-    .latch.left { left: 60px; }
-    .latch.right { right: 60px; }
-    .latch::after {
-      content: ''; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-      width: 12px; height: 12px; background: #222; border-radius: 50%;
-    }
-
-    /* The Lid (Hinged at the bottom) */
-    .crate-lid {
-      position: absolute;
-      bottom: 220px; left: 50%;
-      transform: translateX(-50%) rotateX(0deg);
-      transform-origin: bottom center;
-      width: 420px;
-      height: 60px;
-      background: linear-gradient(180deg, #3A3A45 0%, #2A2A35 100%);
-      border: 2px solid #3A3A45;
-      border-bottom: none;
-      border-radius: 4px 4px 0 0;
-      z-index: 20;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 -10px 20px rgba(0,0,0,0.3);
+      filter: drop-shadow(0 0 15px rgba(247, 0, 255, 0.6)) drop-shadow(0 0 30px rgba(0, 240, 255, 0.4));
     }
     
-    /* "DANGER / HIGH VALUE" stencil on lid */
-    .lid-stencil {
-      font-family: 'Black Ops One', cursive;
-      font-size: 24px; color: rgba(255, 215, 0, 0.6);
-      letter-spacing: 4px; text-transform: uppercase;
+    .signature-path {
+      fill: none;
+      stroke: url(#neonGradient);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 600;
+      stroke-dashoffset: 600;
     }
 
     /* ============================================================
-       THE LOOT (Interior)
+       GLOSSY ACRYLIC CARD
        ============================================================ */
-    .crate-interior {
+    .glass-card {
       position: absolute;
-      bottom: 0; left: 50%;
-      transform: translateX(-50%);
+      left: 140px;
+      top: 50%;
+      transform: translateY(-50%) scale(0.9);
       width: 380px;
-      height: 200px;
-      z-index: 5; /* Behind the front face, revealed when lid opens */
+      padding: 30px 30px 30px 60px; /* Left padding makes room for the 'L' */
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      z-index: 5;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    /* Cinematic light sweep across the glass */
+    .glass-sweep {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+      transform: translateX(-100%);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    /* ============================================================
+       TYPOGRAPHY & CONTENT
+       ============================================================ */
+    .content-wrap {
+      position: relative;
+      z-index: 7;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      /* The magical glow from within */
-      background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.4) 0%, rgba(0,0,0,0.9) 70%);
-      border-radius: 4px;
-      opacity: 0;
+      gap: 8px;
     }
 
-    .loot-rarity {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: #FFD700;
+    .donor-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
       letter-spacing: 3px;
       text-transform: uppercase;
-      margin-bottom: 4px;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(10px);
     }
 
-    .loot-name {
-      font-family: 'Black Ops One', cursive;
-      font-size: 36px;
+    .donor-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
       color: #FFFFFF;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
-      opacity: 0;
-      transform: translateY(20px);
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      overflow: hidden; /* For mask reveal */
     }
-
-    .loot-amount {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 42px;
-      font-weight: 700;
-      color: #00FFFF;
-      margin-top: 4px;
-      text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .loot-message {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      color: #D0D0E0;
-      margin-top: 8px;
-      padding: 8px 16px;
-      background: rgba(0,0,0,0.4);
-      border-left: 3px solid #FFD700;
-      max-width: 340px;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    /* ============================================================
-       MEDIA PROJECTION
-       ============================================================ */
-    .media-hologram {
-      position: absolute;
-      bottom: -120px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      width: 340px;
-      height: 160px;
-      z-index: 8;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .holo-frame {
-      width: 100%; height: 100%;
-      background: rgba(0, 255, 255, 0.05);
-      border: 1px solid rgba(0, 255, 255, 0.3);
-      border-radius: 4px;
+    
+    .name-mask {
+      display: inline-block;
       overflow: hidden;
-      position: relative;
-      backdrop-filter: blur(2px);
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
     }
-    .holo-frame img, .holo-frame video {
-      width: 100%; height: 100%; object-fit: cover; opacity: 0.9;
+    
+    .name-text {
+      display: inline-block;
+      transform: translateY(100%);
     }
-    /* Scanline effect for hologram */
-    .holo-frame::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 255, 0.1) 51%, transparent 52%);
-      background-size: 100% 4px;
-      pointer-events: none;
+
+    .amount-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 4px;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .donation-amount {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 36px;
+      font-weight: 300;
+      background: linear-gradient(90deg, #F700FF, #00F0FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(247, 0, 255, 0.3));
+    }
+
+    .message-box {
+      margin-top: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.5;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transform: translateY(10px);
     }
 
     /* ============================================================
-       PIXI CANVAS
+       MEDIA SECTION (Borderless Glass)
        ============================================================ */
-    #particle-canvas {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 30; /* In front of crate for loot sparks */
+    .media-container {
+      position: absolute;
+      bottom: -100px; /* Positions it below the main card */
+      left: 140px;
+      width: 380px;
+      height: 180px;
+      z-index: 4;
+      opacity: 0;
+      transform: translateY(30px);
     }
-    #dust-canvas {
-      position: absolute; top: 0; left: 0;
+
+    .media-glass {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .media-glass img, .media-glass video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    /* ============================================================
+       PIXIJS CANVAS (Ambient Light Leaks)
+       ============================================================ */
+    #ambient-canvas {
+      position: absolute;
+      top: 0; left: 0;
       width: 100%; height: 100%;
       pointer-events: none;
-      z-index: 1; /* Behind crate for impact dust */
+      z-index: 1; /* Behind the glass, in front of background */
+      mix-blend-mode: screen;
     }
   </style>
 </head>
 <body>
   <div id="root">
-    <canvas id="dust-canvas"></canvas>
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="ambient-canvas"></canvas>
   </div>
 
   <div class="demo-controls" id="demoControls">
-    <button onclick="triggerAlert(0)">Airdrop + Media</button>
-    <button onclick="triggerAlert(1)">Airdrop Only</button>
+    <button onclick="triggerAlert(0)">Test: Media</button>
+    <button onclick="triggerAlert(1)">Test: Text Only</button>
   </div>
 
   <script>
@@ -266,92 +253,93 @@
     // DATA
     // ============================================================
     const mockDonations = [
-      { name: 'SniperKing', amount: 1500, currency: 'INR', message: 'Chicken Dinner incoming! 🍗', media_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400' },
-      { name: 'LatifaFan_99', amount: 500, currency: 'INR', message: 'Best streamer!', media_url: null }
+      { name: 'SniperKing', amount: 1500, currency: 'INR', message: 'Absolutely love the energy today! Keep dominating.', media_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400' },
+      { name: 'LatifaFan_99', amount: 500, currency: 'INR', message: 'Best streamer on the platform, hands down.', media_url: null }
     ];
+    
     let currentDonation = mockDonations[0];
     let masterTimeline = null;
     let countInterval = null;
     let pixiApp = null;
-    let dustApp = null;
 
     // ============================================================
-    // PIXIJS SETUP (Dual Canvas: Dust Behind, Sparks Front)
+    // PIXIJS AMBIENT LIGHT LEAKS
     // ============================================================
     function initPixi() {
-      const root = document.getElementById('root');
-      
-      // Helper to create glowing texture
-      const createGlowTexture = (r, g, b) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 64; canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-        grad.addColorStop(0, `rgba(255, 255, 255, 1)`);
-        grad.addColorStop(0.2, `rgba(${r}, ${g}, ${b}, 0.8)`);
-        grad.addColorStop(1, `rgba(0, 0, 0, 0)`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 64, 64);
-        return PIXI.Texture.from(canvas);
+      const canvas = document.getElementById('ambient-canvas');
+      pixiApp = new PIXI.Application({
+        view: canvas,
+        width: 800,
+        height: 600,
+        backgroundAlpha: 0,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true
+      });
+
+      // Create a soft, glowing orb texture
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+      grad.addColorStop(0.3, 'rgba(247, 0, 255, 0.4)'); // Pink
+      grad.addColorStop(0.6, 'rgba(0, 240, 255, 0.2)'); // Cyan
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+      const texture = PIXI.Texture.from(c);
+
+      const container = new PIXI.Container();
+      pixiApp.stage.addChild(container);
+      container.x = 400; container.y = 300;
+
+      const orbs = [];
+      for (let i = 0; i < 8; i++) {
+        const sprite = new PIXI.Sprite(texture);
+        sprite.anchor.set(0.5);
+        sprite.blendMode = PIXI.BLEND_MODES.ADD;
+        sprite.alpha = 0;
+        sprite.scale.set(1.5 + Math.random());
+        container.addChild(sprite);
+        
+        orbs.push({
+          sprite,
+          active: false,
+          angle: Math.random() * Math.PI * 2,
+          radius: 150 + Math.random() * 200,
+          speed: 0.002 + Math.random() * 0.003,
+          yOffset: (Math.random() - 0.5) * 200
+        });
+      }
+
+      window.startAmbientOrbs = () => {
+        orbs.forEach(orb => {
+          orb.active = true;
+          orb.sprite.alpha = 0.3 + Math.random() * 0.4;
+        });
       };
 
-      const setupEmitter = (canvasId, zIndex) => {
-        const app = new PIXI.Application({
-          view: document.getElementById(canvasId),
-          width: 800, height: 600,
-          backgroundAlpha: 0, resolution: window.devicePixelRatio || 1, autoDensity: true
+      window.stopAmbientOrbs = () => {
+        orbs.forEach(orb => {
+          orb.active = false;
+          gsap.to(orb.sprite, { alpha: 0, duration: 1 });
         });
-        const container = new PIXI.Container();
-        app.stage.addChild(container);
-        container.x = 400; container.y = 300;
-
-        const particles = [];
-        const max = 80;
-        for (let i = 0; i < max; i++) {
-          const sprite = new PIXI.Sprite(createGlowTexture(255, 255, 255));
-          sprite.anchor.set(0.5);
-          sprite.blendMode = canvasId === 'particle-canvas' ? PIXI.BLEND_MODES.ADD : PIXI.BLEND_MODES.NORMAL;
-          sprite.alpha = 0;
-          container.addChild(sprite);
-          particles.push({ sprite, active: false, life: 0, maxLife: 1, vx: 0, vy: 0 });
-        }
-
-        window[canvasId === 'particle-canvas' ? 'burstLoot' : 'burstDust'] = (x, y, count, color) => {
-          let spawned = 0;
-          particles.forEach(p => {
-            if (!p.active && spawned < count) {
-              p.active = true; p.life = 0; p.maxLife = 1.5 + Math.random();
-              p.sprite.x = x; p.sprite.y = y;
-              const angle = Math.random() * Math.PI * 2;
-              const speed = canvasId === 'particle-canvas' ? 1 + Math.random() * 2 : 2 + Math.random() * 4;
-              p.vx = Math.cos(angle) * speed;
-              p.vy = Math.sin(angle) * speed + (canvasId === 'particle-canvas' ? -1 : 0); // Loot floats up
-              p.sprite.tint = color;
-              p.sprite.scale.set(canvasId === 'particle-canvas' ? 0.3 : 0.8);
-              p.sprite.alpha = 1;
-              spawned++;
-            }
-          });
-        };
-
-        app.ticker.add((delta) => {
-          particles.forEach(p => {
-            if (p.active) {
-              p.life += delta / 60;
-              p.sprite.x += p.vx * delta;
-              p.sprite.y += p.vy * delta;
-              const progress = p.life / p.maxLife;
-              p.sprite.alpha = 1 - progress;
-              p.sprite.scale.set(p.sprite.scale.x * 0.98);
-              if (p.life >= p.maxLife) { p.active = false; p.sprite.alpha = 0; }
-            }
-          });
-        });
-        return app;
       };
 
-      dustApp = setupEmitter('dust-canvas', 1);
-      pixiApp = setupEmitter('particle-canvas', 30);
+      pixiApp.ticker.add(() => {
+        orbs.forEach(orb => {
+          if (orb.active) {
+            orb.angle += orb.speed;
+            // Figure-8 or circular drifting motion
+            orb.sprite.x = Math.cos(orb.angle) * orb.radius;
+            orb.sprite.y = Math.sin(orb.angle * 0.5) * (orb.radius * 0.5) + orb.yOffset;
+            
+            // Subtle pulsing
+            const pulse = 1 + Math.sin(orb.angle * 3) * 0.1;
+            orb.sprite.scale.set((1.5 + Math.random() * 0.5) * pulse);
+          }
+        });
+      });
     }
 
     // ============================================================
@@ -359,39 +347,52 @@
     // ============================================================
     function render(donation) {
       const symbol = { INR: '₹', USD: '$', EUR: '€', GBP: '£' }[donation.currency || 'INR'] || '₹';
+      
       const mediaHtml = donation.media_url ? `
-        <div class="media-hologram">
-          <div class="holo-frame">
+        <div class="media-container">
+          <div class="media-glass">
             <img src="${donation.media_url}" alt="media" />
           </div>
         </div>
       ` : '';
 
+      // Split name into masked characters for elegant reveal
+      const nameStr = donation.name || 'Anonymous';
+      const nameMasked = nameStr.split('').map(char => 
+        `<span class="name-mask"><span class="name-text">${char === ' ' ? '&nbsp;' : char}</span></span>`
+      ).join('');
+
       return `
-        <div class="crate-stage">
-          <!-- LID -->
-          <div class="crate-lid">
-            <div class="lid-stencil">High Value</div>
-          </div>
-          
-          <!-- BODY -->
-          <div class="crate-body">
-            <div class="crate-corner tl"></div>
-            <div class="crate-corner tr"></div>
-            <div class="crate-corner bl"></div>
-            <div class="crate-corner br"></div>
-            <div class="crate-stripe left"></div>
-            <div class="crate-stripe right"></div>
-            <div class="latch left"></div>
-            <div class="latch right"></div>
+        <div class="signature-stage">
+          <!-- SVG DEFINITIONS -->
+          <svg width="0" height="0">
+            <defs>
+              <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F700FF" />
+                <stop offset="100%" stop-color="#00F0FF" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- HERO SIGNATURE -->
+          <div class="signature-container">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+              <!-- Elegant, flowing "L" path -->
+              <path class="signature-path" d="M 25 20 C 25 20, 20 40, 35 50 C 50 60, 75 45, 75 45 C 75 45, 60 75, 30 80 C 20 82, 15 75, 15 75" />
+            </svg>
           </div>
 
-          <!-- INTERIOR LOOT -->
-          <div class="crate-interior">
-            <div class="loot-rarity">Legendary Support</div>
-            <div class="loot-name">${donation.name.toUpperCase()}</div>
-            <div class="loot-amount" id="lootAmount">${symbol}0</div>
-            ${donation.message ? `<div class="loot-message">"${donation.message}"</div>` : ''}
+          <!-- GLOSSY CARD -->
+          <div class="glass-card">
+            <div class="glass-sweep"></div>
+            <div class="content-wrap">
+              <div class="donor-label">New Supporter</div>
+              <div class="donor-name">${nameMasked}</div>
+              <div class="amount-row">
+                <div class="donation-amount" id="amountDisplay">${symbol}0</div>
+              </div>
+              ${donation.message ? `<div class="message-box">"${donation.message}"</div>` : ''}
+            </div>
           </div>
 
           ${mediaHtml}
@@ -405,123 +406,122 @@
     function showAlert(donation) {
       if (masterTimeline) masterTimeline.kill();
       clearInterval(countInterval);
+      window.stopAmbientOrbs?.();
       
       const root = document.getElementById('root');
-      // Preserve canvases
-      const dustCanvas = document.getElementById('dust-canvas');
-      const pixiCanvas = document.getElementById('particle-canvas');
+      const canvas = document.getElementById('ambient-canvas');
       root.innerHTML = '';
-      root.appendChild(dustCanvas);
-      root.appendChild(pixiCanvas);
+      root.appendChild(canvas);
       root.insertAdjacentHTML('beforeend', render(donation));
 
-      const stage = document.querySelector('.crate-stage');
+      const stage = document.querySelector('.signature-stage');
       gsap.set(stage, { opacity: 1 });
 
       masterTimeline = gsap.timeline({ defaults: { ease: "power3.out" } });
       const targetAmount = donation.amount;
       const symbol = { INR: '₹', USD: '$', EUR: '€', GBP: '£' }[donation.currency || 'INR'] || '₹';
 
-      // 0.0s: THE DROP (Slam down with elastic bounce)
-      masterTimeline.fromTo(".crate-stage", 
-        { y: -600, rotation: -5 },
-        { y: 0, rotation: 0, duration: 0.8, ease: "bounce.out" }, 0
-      );
-
-      // 0.4s: IMPACT DUST & SCREEN SHAKE
-      masterTimeline.call(() => {
-        window.burstDust(400, 500, 40, 0xAAAAAA); // Grey dust at bottom
-      }, null, 0.4);
-      masterTimeline.to("#root", { x: "-=3", duration: 0.05, yoyo: true, repeat: 3 }, 0.4);
-
-      // 0.6s: LATCHES DISENGAGE (Snap open)
-      masterTimeline.to(".latch.left", { rotation: -45, scale: 0.8, duration: 0.2, ease: "back.in(2)" }, 0.6);
-      masterTimeline.to(".latch.right", { rotation: 45, scale: 0.8, duration: 0.2, ease: "back.in(2)" }, 0.65);
-
-      // 0.8s: INTERIOR GLOW & LID OPENS (3D Hinge)
-      masterTimeline.to(".crate-interior", { opacity: 1, duration: 0.3 }, 0.8);
-      masterTimeline.to(".crate-lid", { 
-        rotateX: 110, 
-        duration: 0.6, 
+      // 0.0s: SIGNATURE DRAW (The Hero)
+      masterTimeline.to(".signature-path", { 
+        strokeDashoffset: 0, 
+        duration: 1.2, 
         ease: "power2.inOut" 
-      }, 0.9);
+      }, 0);
 
-      // 1.0s: LOOT REVEAL (Staggered upward float)
-      masterTimeline.to(".loot-rarity", { opacity: 1, y: 0, duration: 0.5 }, 1.1);
-      masterTimeline.to(".loot-name", { opacity: 1, y: 0, duration: 0.5 }, 1.2);
-      masterTimeline.to(".loot-amount", { opacity: 1, y: 0, duration: 0.5 }, 1.3);
+      // 0.3s: GLASS CARD MATERIALIZES (Elegant scale + fade)
+      masterTimeline.to(".glass-card", { 
+        opacity: 1, 
+        scale: 1, 
+        duration: 0.8, 
+        ease: "expo.out" 
+      }, 0.3);
+
+      // 0.5s: LIGHT SWEEP ACROSS GLASS
+      masterTimeline.to(".glass-sweep", { 
+        x: "100%", 
+        duration: 1.0, 
+        ease: "power1.inOut" 
+      }, 0.5);
+
+      // 0.6s: TYPOGRAPHY REVEALS (Staggered, smooth)
+      masterTimeline.to(".donor-label", { opacity: 1, y: 0, duration: 0.6 }, 0.6);
       
-      // Amount Count-Up
+      // Name reveal: slide up from mask
+      masterTimeline.to(".name-text", { 
+        y: "0%", 
+        duration: 0.7, 
+        stagger: 0.03, 
+        ease: "power3.out" 
+      }, 0.7);
+
+      // 0.9s: AMOUNT REVEAL + COUNT UP
+      masterTimeline.to(".amount-row", { opacity: 1, y: 0, duration: 0.6 }, 0.9);
+      
       const startTime = performance.now();
       countInterval = setInterval(() => {
         const elapsed = performance.now() - startTime;
         const progress = Math.min(elapsed / 1000, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
+        const ease = 1 - Math.pow(1 - progress, 3); // Ease out cubic
         const current = Math.floor(ease * targetAmount);
-        const el = document.getElementById('lootAmount');
+        const el = document.getElementById('amountDisplay');
         if (el) el.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
+        
         if (progress >= 1) {
           clearInterval(countInterval);
           if (el) el.textContent = `${symbol}${targetAmount.toLocaleString('en-IN')}`;
-          // Trigger loot spark burst when amount finishes
-          window.burstLoot(400, 320, 30, 0x00FFFF); 
         }
       }, 16);
 
-      if (donation.message) {
-        masterTimeline.to(".loot-message", { opacity: 1, y: 0, duration: 0.5 }, 1.4);
+      // 1.1s: MESSAGE REVEAL
+      if (document.querySelector('.message-box')) {
+        masterTimeline.to(".message-box", { opacity: 1, y: 0, duration: 0.6 }, 1.1);
       }
 
-      // 1.6s: MEDIA HOLOGRAM PROJECTION
-      if (document.querySelector('.media-hologram')) {
-        masterTimeline.to(".media-hologram", { 
+      // 1.3s: MEDIA REVEAL (If exists)
+      if (document.querySelector('.media-container')) {
+        masterTimeline.to(".media-container", { 
           opacity: 1, 
-          y: 0, // Slides up from -120px bottom offset conceptually, but we animate translateY
-          duration: 0.7, 
-          ease: "power2.out" 
-        }, 1.6);
+          y: 0, 
+          duration: 0.8, 
+          ease: "power3.out" 
+        }, 1.3);
       }
 
-      // 2.0s: AMBIENT LOOT SPARKS
+      // 1.8s: TRANSITION TO AMBIENT IDLE
       masterTimeline.call(() => {
-        setInterval(() => {
-          if (document.querySelector('.crate-stage')) {
-            window.burstLoot(350 + Math.random() * 100, 350, 2, Math.random() > 0.5 ? 0x00FFFF : 0x8A2BE2);
-          }
-        }, 300);
-      }, null, 2.0);
+        window.startAmbientOrbs();
+      }, null, 1.8);
     }
 
     function hideAlert() {
-      const stage = document.querySelector('.crate-stage');
+      const stage = document.querySelector('.signature-stage');
       if (!stage) return;
       if (masterTimeline) masterTimeline.kill();
       clearInterval(countInterval);
+      window.stopAmbientOrbs?.();
 
       const exitTl = gsap.timeline({
         onComplete: () => {
-          const dustCanvas = document.getElementById('dust-canvas');
-          const pixiCanvas = document.getElementById('particle-canvas');
+          const canvas = document.getElementById('ambient-canvas');
           document.getElementById('root').innerHTML = '';
-          document.getElementById('root').appendChild(dustCanvas);
-          document.getElementById('root').appendChild(pixiCanvas);
+          document.getElementById('root').appendChild(canvas);
         }
       });
 
-      // Cinematic Exit: Lid slams shut, crate dissolves into particles
+      // Elegant Exit: Reverse the elegance
       exitTl
-        .to(".crate-lid", { rotateX: 0, duration: 0.3, ease: "power2.in" }, 0)
-        .to(".latch.left", { rotation: 0, scale: 1, duration: 0.2 }, 0.2)
-        .to(".latch.right", { rotation: 0, scale: 1, duration: 0.2 }, 0.2)
-        .to(".crate-interior, .media-hologram", { opacity: 0, duration: 0.2 }, 0.1)
-        .call(() => { window.burstDust(400, 400, 50, 0x8A2BE2); }, null, 0.3) // Purple dissolution burst
-        .to(".crate-stage", { scale: 1.1, opacity: 0, filter: "blur(10px)", duration: 0.5 }, 0.3);
+        .to(".media-container", { opacity: 0, y: 20, duration: 0.4 }, 0)
+        .to(".message-box, .amount-row", { opacity: 0, y: -10, duration: 0.4 }, 0.1)
+        .to(".name-text", { y: "-100%", duration: 0.5, stagger: 0.02, ease: "power3.in" }, 0.2)
+        .to(".donor-label", { opacity: 0, duration: 0.3 }, 0.2)
+        .to(".glass-card", { opacity: 0, scale: 0.95, filter: "blur(10px)", duration: 0.6 }, 0.3)
+        .to(".signature-path", { strokeDashoffset: 600, opacity: 0, duration: 0.8 }, 0.4);
     }
 
     function triggerAlert(index) {
       currentDonation = mockDonations[index];
       hideAlert();
-      setTimeout(() => showAlert(currentDonation), 800);
+      setTimeout(() => showAlert(currentDonation), 1000);
     }
 
     // ============================================================
