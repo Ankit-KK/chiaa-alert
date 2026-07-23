@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Latifa Alert Preview v3 - GSAP</title>
+  <title>Latifa Alert Preview v4 - Typing Effect</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
@@ -106,6 +106,29 @@
         );
       clip-path: inherit;
       pointer-events: none;
+    }
+
+    /* Shimmer effect on amount */
+    .latifa-alert .la-amount {
+      position: relative;
+      display: inline-block;
+    }
+
+    .latifa-alert .la-amount::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+      );
+      pointer-events: none;
+      opacity: 0;
     }
 
     .latifa-alert .la-object::after {
@@ -299,7 +322,6 @@
     .latifa-alert .la-particle:nth-child(6) { top: 55%; left: 88%; width: 2px; height: 2px; }
     .latifa-alert .la-particle:nth-child(7) { top: 30%; left: 95%; width: 2px; height: 2px; }
 
-    /* Burst particles */
     .latifa-alert .la-burst {
       position: absolute;
       inset: 0;
@@ -326,6 +348,7 @@
       box-shadow: 0 0 8px var(--la-pink);
     }
 
+    /* CONTENT */
     .latifa-alert .la-content {
       position: relative;
       z-index: 5;
@@ -391,6 +414,7 @@
       transform: translateY(20px);
     }
 
+    /* TYPING EFFECT */
     .latifa-alert .la-message {
       font-family: 'Cormorant Garamond', serif;
       font-size: 15px;
@@ -400,7 +424,22 @@
       line-height: 1.5;
       margin-top: 6px;
       opacity: 0;
-      transform: translateY(20px);
+      min-height: 22px;
+    }
+
+    .latifa-alert .la-message .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--la-lavender);
+      margin-left: 2px;
+      animation: cursorBlink 0.8s infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
     }
 
     .latifa-alert .la-divider {
@@ -455,6 +494,7 @@
       height: auto;
     }
 
+    /* Preview controls */
     .preview-controls {
       position: fixed;
       bottom: 24px;
@@ -512,7 +552,7 @@
   </style>
 </head>
 <body>
-  <div class="preview-label">LATIFA ALERT v3 — GSAP ANIMATED</div>
+  <div class="preview-label">LATIFA ALERT v4 — TYPING EFFECT</div>
 
   <div class="latifa-alert">
     <div class="la-wrap" id="alertWrap">
@@ -584,7 +624,7 @@
             <div class="la-amount" id="donorAmount">₹5,000</div>
             <div class="la-badge" id="donorBadge">TEXT</div>
           </div>
-          <div class="la-message" id="donorMessage">"Thank you for the cozy vibes! Your stream always makes my day better &lt;3"</div>
+          <div class="la-message" id="donorMessage"></div>
         </div>
       </div>
 
@@ -614,6 +654,7 @@
     let mediaVisible = false;
     let masterTimeline = null;
     let idleTimeline = null;
+    let typingTimeout = null;
 
     const symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
@@ -669,18 +710,41 @@
       });
     }
 
+    function typeMessage(text, element) {
+      if (!text) {
+        element.style.display = 'none';
+        return;
+      }
+
+      element.style.display = 'block';
+      element.innerHTML = '<span class="cursor"></span>';
+      
+      let i = 0;
+      const speed = 30;
+      
+      function typeChar() {
+        if (i < text.length) {
+          const cursor = element.querySelector('.cursor');
+          const textNode = document.createTextNode(text.charAt(i));
+          element.insertBefore(textNode, cursor);
+          i++;
+          typingTimeout = setTimeout(typeChar, speed);
+        } else {
+          // Remove cursor after typing is done
+          setTimeout(() => {
+            const cursor = element.querySelector('.cursor');
+            if (cursor) cursor.remove();
+          }, 1000);
+        }
+      }
+      
+      typeChar();
+    }
+
     function startIdleAnimations() {
       if (idleTimeline) idleTimeline.kill();
       
       idleTimeline = gsap.timeline({ repeat: -1 });
-      
-      // Refraction sweep
-      idleTimeline.to('#alertRefraction::before', {
-        duration: 8,
-        x: '200%',
-        ease: 'none',
-        repeat: -1
-      });
       
       // Stars twinkling
       gsap.utils.toArray('.la-star').forEach((star, i) => {
@@ -708,10 +772,21 @@
           delay: i * 0.4
         });
       });
+
+      // Shimmer on amount
+      gsap.to('.la-amount::after', {
+        duration: 3,
+        left: '100%',
+        opacity: 1,
+        ease: 'power1.inOut',
+        repeat: -1,
+        repeatDelay: 5
+      });
     }
 
     function playEntrance() {
       if (masterTimeline) masterTimeline.kill();
+      if (typingTimeout) clearTimeout(typingTimeout);
       
       createBurstParticles();
       
@@ -841,35 +916,30 @@
         0.48
       );
       
-      // Message fades in
-      if (message.textContent) {
-        masterTimeline.fromTo(message,
-          { opacity: 0, y: 20 },
-          {
-            duration: 0.5,
-            opacity: 1,
-            y: 0,
-            ease: 'power3.out'
-          },
-          0.55
-        );
-      }
+      // Message typing effect
+      masterTimeline.call(() => {
+        gsap.to(message, {
+          duration: 0.3,
+          opacity: 1,
+          ease: 'power2.out'
+        });
+        
+        const currentDonation = donations[currentIndex];
+        if (currentDonation.message) {
+          typeMessage(`"${currentDonation.message}"`, message);
+        }
+      }, null, 0.6);
       
       // Start idle animations after entrance
-      masterTimeline.call(startIdleAnimations, null, 1.5);
-      
-      // Refraction animation
-      gsap.to('#alertRefraction::before', {
-        duration: 8,
-        x: '200%',
-        ease: 'none',
-        repeat: -1
-      });
+      masterTimeline.call(startIdleAnimations, null, 2);
     }
 
     function replayAlert() {
       const wrap = document.getElementById('alertWrap');
+      const message = document.getElementById('donorMessage');
+      
       gsap.set(wrap, { opacity: 0 });
+      message.innerHTML = '';
       
       setTimeout(() => {
         playEntrance();
@@ -926,14 +996,6 @@
       document.getElementById('donorName').textContent = d.name;
       document.getElementById('donorAmount').textContent = fmt(d);
       document.getElementById('donorBadge').textContent = d.badge;
-
-      const msgEl = document.getElementById('donorMessage');
-      if (d.message) {
-        msgEl.textContent = `"${d.message}"`;
-        msgEl.style.display = 'block';
-      } else {
-        msgEl.style.display = 'none';
-      }
 
       replayAlert();
     }
