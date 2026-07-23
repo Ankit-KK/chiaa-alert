@@ -1,494 +1,580 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Latifa MVP Reward Banner</title>
-  
-  <!-- Premium Gaming Typography -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- GSAP for AAA Micro-Animations -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latifa Alert Preview</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
   <style>
-    /* ============================================================
-       GLOBAL & RESET
-       ============================================================ */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%;
-      background: transparent !important;
-      overflow: hidden;
-    }
-    #root {
-      width: 100%; height: 100%;
-      display: flex;
-      align-items: flex-end; /* Default OBS placement */
-      justify-content: flex-start;
-      padding: 40px;
-      background: transparent;
-    }
-
-    .demo-controls {
-      display: none; position: fixed; top: 16px; left: 16px; z-index: 9999;
-      background: rgba(10, 10, 15, 0.9); border: 1px solid rgba(255, 215, 0, 0.3);
-      padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);
-      font-family: 'Rajdhani', sans-serif;
-    }
-    .demo-controls.visible { display: flex; gap: 8px; }
-    .demo-controls button {
-      background: linear-gradient(135deg, #FFD700, #FF8C00);
-      color: #000; border: none; padding: 6px 14px; border-radius: 4px;
-      font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
-      letter-spacing: 0.5px; transition: filter 0.2s;
-    }
-    .demo-controls button:hover { filter: brightness(1.2); }
-
-    /* ============================================================
-       MVP BANNER CONTAINER
-       ============================================================ */
-    .mvp-wrapper {
-      position: relative;
-      width: 440px;
+    /* Transparency checker - remove for OBS */
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      opacity: 0; /* Hidden until GSAP starts */
-    }
-
-    /* ============================================================
-       MAIN REWARD CARD
-       ============================================================ */
-    .mvp-card {
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 18px 24px 18px 20px;
-      /* Premium dark metallic base */
-      background: linear-gradient(135deg, rgba(35, 35, 45, 0.95) 0%, rgba(15, 15, 20, 0.98) 100%);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      /* Subtle beveled/tactical cut on bottom right */
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
-      /* Inner depth and outer glow */
-      box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-        0 12px 40px rgba(0, 0, 0, 0.5);
-      z-index: 10;
-      overflow: visible; /* Allow glow to spill */
-    }
-
-    /* Animated Legendary Rarity Trim (Left & Top) */
-    .mvp-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border-radius: 4px; /* Matches general shape before clip-path */
-      padding: 2px; /* Border width */
-      background: linear-gradient(90deg, #FFD700, #FF69B4, #FFD700);
-      background-size: 200% 100%;
-      -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      z-index: 11;
-      animation: rarityShimmer 3s linear infinite;
-    }
-    @keyframes rarityShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* Holographic Light Sweep */
-    .mvp-sweep {
-      position: absolute; inset: 0;
-      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.02) 50%, transparent 55%);
-      transform: translateX(-100%);
-      pointer-events: none;
-      z-index: 12;
-    }
-
-    /* ============================================================
-       RANK BADGE (Left Accent)
-       ============================================================ */
-    .rank-badge {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #2a2a35, #1a1a24);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      border-radius: 8px;
-      display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 16px;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      position: relative;
-      z-index: 13;
-    }
-    .rank-badge svg {
-      width: 24px; height: 24px;
-      fill: #FFD700;
-      filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+      gap: 40px;
+      background-image:
+        linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
+        linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
+        linear-gradient(-45deg, transparent 75%, #1a1a2e 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      background-color: #12121f;
+      font-family: 'Inter', sans-serif;
     }
 
-    /* ============================================================
-       CONTENT AREA
-       ============================================================ */
-    .mvp-content {
-      flex: 1;
-      min-width: 0; /* Allows text truncation */
+    /* ═══════════════════════════════════════════
+       ALERT STYLES - Everything below this line
+       is the actual alert component
+    ═══════════════════════════════════════════ */
+
+    .latifa-alert {
+      --la-twilight-deep: #1a1f3a;
+      --la-twilight: #2d1b4e;
+      --la-purple: #4a3a6e;
+      --la-purple-mid: #6b5a8e;
+      --la-lavender: #b8a9c9;
+      --la-lilac: #d4b8e0;
+      --la-pink: #e8b4c8;
+      --la-peach: #f5d4c4;
+      --la-gold: #d4a574;
+      --la-gold-light: #f0d9b5;
+      --la-cream: #f5f0f8;
+      --la-white: #ffffff;
+
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .latifa-alert *, .latifa-alert *::before, .latifa-alert *::after {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    /* WRAP */
+    .latifa-alert .la-wrap {
+      position: relative;
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(16px) scale(0.92);
+    }
+
+    .latifa-alert .la-wrap.entering {
+      animation: la-wrapEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes la-wrapEnter {
+      0% { opacity: 0; transform: translateY(16px) scale(0.92); filter: blur(4px); }
+      60% { filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    /* MAIN OBJECT - Crystal/Gem silhouette */
+    .latifa-alert .la-object {
+      position: relative;
+      width: 400px;
+      padding: 24px 36px 20px;
+      background: linear-gradient(
+        160deg,
+        rgba(74, 58, 110, 0.94) 0%,
+        rgba(45, 27, 78, 0.96) 40%,
+        rgba(26, 31, 58, 0.97) 100%
+      );
+      clip-path: polygon(
+        20px 0%,
+        calc(100% - 20px) 0%,
+        100% 16px,
+        100% calc(100% - 8px),
+        calc(100% - 12px) 100%,
+        12px 100%,
+        0% calc(100% - 8px),
+        0% 16px
+      );
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(184, 169, 201, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* Inner shimmer */
+    .latifa-alert .la-object::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(212, 184, 224, 0.06) 0%,
+        transparent 40%,
+        rgba(232, 180, 200, 0.03) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Top edge highlight */
+    .latifa-alert .la-object::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(184, 169, 201, 0.4) 30%,
+        rgba(212, 184, 224, 0.6) 50%,
+        rgba(184, 169, 201, 0.4) 70%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Ambient glow behind */
+    .latifa-alert .la-glow {
+      position: absolute;
+      top: -30%;
+      left: -20%;
+      width: 140%;
+      height: 160%;
+      background: radial-gradient(
+        ellipse at 50% 40%,
+        rgba(184, 169, 201, 0.1) 0%,
+        rgba(107, 90, 142, 0.05) 40%,
+        transparent 70%
+      );
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .latifa-alert .entering .la-glow {
+      animation: la-glowPulse 1.5s ease-out 0.2s forwards;
+    }
+
+    @keyframes la-glowPulse {
+      0% { opacity: 0; transform: scale(0.9); }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; transform: scale(1); }
+    }
+
+    /* SVG Border */
+    .latifa-alert .la-border-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+      overflow: visible;
+    }
+
+    .latifa-alert .la-border-path {
+      stroke-dasharray: 1100;
+      stroke-dashoffset: 1100;
+    }
+
+    .latifa-alert .entering .la-border-path {
+      animation: la-borderDraw 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+    }
+
+    @keyframes la-borderDraw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Corner accents */
+    .latifa-alert .la-corner {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      z-index: 4;
+    }
+
+    .latifa-alert .la-corner-tl { top: 10px; left: 14px; border-top: 1.5px solid var(--la-lavender); border-left: 1.5px solid var(--la-lavender); }
+    .latifa-alert .la-corner-tr { top: 10px; right: 14px; border-top: 1.5px solid var(--la-lilac); border-right: 1.5px solid var(--la-lilac); }
+    .latifa-alert .la-corner-bl { bottom: 6px; left: 8px; border-bottom: 1.5px solid var(--la-pink); border-left: 1.5px solid var(--la-pink); }
+    .latifa-alert .la-corner-br { bottom: 6px; right: 8px; border-bottom: 1.5px solid var(--la-peach); border-right: 1.5px solid var(--la-peach); }
+
+    .latifa-alert .entering .la-corner {
+      animation: la-cornerIn 0.3s ease-out 0.5s forwards;
+    }
+
+    @keyframes la-cornerIn {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 0.8; transform: scale(1); }
+    }
+
+    /* Floating particles */
+    .latifa-alert .la-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .latifa-alert .la-particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .latifa-alert .la-particle:nth-child(odd) {
+      background: var(--la-lavender);
+      box-shadow: 0 0 4px var(--la-lavender);
+    }
+
+    .latifa-alert .la-particle:nth-child(even) {
+      background: var(--la-pink);
+      box-shadow: 0 0 4px var(--la-pink);
+    }
+
+    .latifa-alert .entering .la-particle {
+      animation: la-pFloat 5s infinite ease-in-out;
+    }
+
+    .latifa-alert .la-particle:nth-child(1) { top: 18%; left: 8%; animation-delay: 0.4s; width: 3px; height: 3px; }
+    .latifa-alert .la-particle:nth-child(2) { top: 65%; left: 90%; animation-delay: 0.7s; }
+    .latifa-alert .la-particle:nth-child(3) { top: 35%; left: 25%; animation-delay: 1.0s; width: 2.5px; height: 2.5px; }
+    .latifa-alert .la-particle:nth-child(4) { top: 78%; left: 55%; animation-delay: 0.8s; }
+    .latifa-alert .la-particle:nth-child(5) { top: 12%; left: 70%; animation-delay: 1.2s; width: 2px; height: 2px; }
+    .latifa-alert .la-particle:nth-child(6) { top: 50%; left: 42%; animation-delay: 0.6s; }
+
+    @keyframes la-pFloat {
+      0% { opacity: 0; transform: translateY(0) scale(0.4); }
+      15% { opacity: 0.9; transform: translateY(-6px) scale(1); }
+      70% { opacity: 0.3; transform: translateY(4px) scale(0.7); }
+      100% { opacity: 0; transform: translateY(10px) scale(0.3); }
+    }
+
+    /* CONTENT */
+    .latifa-alert .la-content {
+      position: relative;
+      z-index: 5;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      z-index: 13;
+      gap: 4px;
     }
 
-    .mvp-row {
+    /* Name */
+    .latifa-alert .la-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--la-white);
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .latifa-alert .entering .la-name {
+      animation: la-textRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+    }
+
+    /* Amount row */
+    .latifa-alert .la-amount-row {
       display: flex;
       align-items: baseline;
       gap: 10px;
-      flex-wrap: wrap;
+      margin-top: 2px;
     }
 
-    .mvp-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 11px;
+    .latifa-alert .la-amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.4);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--la-lavender) 0%, var(--la-lilac) 40%, var(--la-pink) 80%, var(--la-peach) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.8px;
+      opacity: 0;
+      transform: translateY(6px);
     }
 
-    .mvp-name {
+    .latifa-alert .entering .la-amount {
+      animation: la-textRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.42s forwards;
+    }
+
+    /* Badge */
+    .latifa-alert .la-badge {
       font-family: 'Inter', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: #FFFFFF;
-      letter-spacing: -0.2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .mvp-amount {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: #FFD700;
-      letter-spacing: 0.5px;
-      text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
-      line-height: 1;
-    }
-
-    .mvp-type-badge {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      color: #000;
-      background: #FFD700;
-      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--la-lavender);
+      padding: 2px 8px;
+      border: 1px solid rgba(184, 169, 201, 0.3);
       border-radius: 2px;
-      letter-spacing: 0.5px;
-      margin-left: auto; /* Pushes to right */
+      background: rgba(184, 169, 201, 0.06);
+      opacity: 0;
+      transform: translateY(6px);
     }
 
-    .mvp-message {
+    .latifa-alert .entering .la-badge {
+      animation: la-textRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.48s forwards;
+    }
+
+    /* Message */
+    .latifa-alert .la-message {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: rgba(245, 240, 248, 0.8);
+      line-height: 1.5;
+      margin-top: 4px;
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .latifa-alert .entering .la-message {
+      animation: la-textRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
+    }
+
+    @keyframes la-textRise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Decorative divider */
+    .latifa-alert .la-divider {
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--la-lavender), var(--la-lilac), transparent);
+      margin: 6px 0 2px;
+      opacity: 0;
+    }
+
+    .latifa-alert .entering .la-divider {
+      animation: la-dividerExpand 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+    }
+
+    @keyframes la-dividerExpand {
+      0% { width: 0; opacity: 0; }
+      100% { width: 120px; opacity: 0.5; }
+    }
+
+    /* MEDIA */
+    .latifa-alert .la-media {
+      position: relative;
+      width: 400px;
+      margin-top: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      opacity: 0;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(184, 169, 201, 0.15);
+    }
+
+    .latifa-alert .entering .la-media {
+      animation: la-mediaReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
+    }
+
+    @keyframes la-mediaReveal {
+      0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .latifa-alert .la-media img,
+    .latifa-alert .la-media video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* ═══════════════════════════════════════════
+       PREVIEW CONTROLS (not part of alert)
+    ═══════════════════════════════════════════ */
+
+    .preview-controls {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
+    .preview-controls button {
+      padding: 10px 20px;
+      background: rgba(45, 27, 78, 0.9);
+      border: 1px solid rgba(184, 169, 201, 0.3);
+      border-radius: 6px;
+      color: var(--la-cream, #f5f0f8);
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.75);
-      line-height: 1.4;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      margin-top: 2px;
-      /* Truncate after 2 lines */
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* ============================================================
-       MEDIA SECTION (Integrated Reward Replay)
-       ============================================================ */
-    .mvp-media {
-      width: 100%;
-      height: 0; /* Starts collapsed */
-      margin-top: -8px; /* Slight overlap with main card for seamless connection */
-      padding-top: 8px;
-      z-index: 5;
-      opacity: 0;
-      position: relative;
-    }
-    
-    .mvp-media-frame {
-      width: 100%;
-      height: 160px;
-      background: rgba(15, 15, 20, 0.85);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      /* Matching tactical cut */
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
-      border: 1px solid rgba(255, 215, 0, 0.15);
-      border-top: 2px solid rgba(255, 215, 0, 0.4);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-      position: relative;
     }
 
-    .mvp-media-frame img, 
-    .mvp-media-frame video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.95;
+    .preview-controls button:hover {
+      background: rgba(74, 58, 110, 0.9);
+      border-color: rgba(184, 169, 201, 0.6);
     }
 
-    /* Subtle scanline overlay for media */
-    .mvp-media-frame::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.1) 51%, transparent 52%);
-      background-size: 100% 4px;
+    .preview-label {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(184, 169, 201, 0.5);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       pointer-events: none;
-      opacity: 0.3;
     }
 
-    /* ============================================================
-       UTILITY CLASSES FOR GSAP
-       ============================================================ */
-    .reveal-up {
-      opacity: 0;
-      transform: translateY(8px);
+    @media (max-width: 500px) {
+      .latifa-alert .la-object {
+        width: 320px;
+        padding: 18px 24px 16px;
+      }
+      .latifa-alert .la-name { font-size: 20px; }
+      .latifa-alert .la-amount { font-size: 24px; }
+      .latifa-alert .la-message { font-size: 13px; }
+      .latifa-alert .la-media { width: 320px; }
     }
   </style>
 </head>
 <body>
-  <div id="root">
-    <div class="mvp-wrapper" id="mvpWrapper">
-      <!-- Dynamically populated -->
+  <div class="preview-label">LATIFA ALERT — PREVIEW (transparent bg)</div>
+
+  <!-- THE ALERT -->
+  <div class="latifa-alert">
+    <div class="la-wrap entering" id="alertWrap">
+      <div class="la-object">
+        <div class="la-glow"></div>
+
+        <svg class="la-border-svg" viewBox="0 0 400 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="laBorderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#b8a9c9" />
+              <stop offset="40%" stop-color="#d4b8e0" />
+              <stop offset="70%" stop-color="#e8b4c8" />
+              <stop offset="100%" stop-color="#f5d4c4" />
+            </linearGradient>
+          </defs>
+          <path
+            class="la-border-path"
+            d="M 20 0.5 L 380 0.5 L 399.5 16 L 399.5 132 L 388 139.5 L 12 139.5 L 0.5 132 L 0.5 16 Z"
+            fill="none"
+            stroke="url(#laBorderGrad)"
+            strokeWidth="1.2"
+          />
+        </svg>
+
+        <div class="la-corner la-corner-tl"></div>
+        <div class="la-corner la-corner-tr"></div>
+        <div class="la-corner la-corner-bl"></div>
+        <div class="la-corner la-corner-br"></div>
+
+        <div class="la-particles">
+          <div class="la-particle"></div>
+          <div class="la-particle"></div>
+          <div class="la-particle"></div>
+          <div class="la-particle"></div>
+          <div class="la-particle"></div>
+          <div class="la-particle"></div>
+        </div>
+
+        <div class="la-content">
+          <div class="la-name">Aria Moonwhisper</div>
+          <div class="la-divider"></div>
+          <div class="la-amount-row">
+            <div class="la-amount">₹5,000</div>
+            <div class="la-badge">TEXT</div>
+          </div>
+          <div class="la-message">"Thank you for the cozy vibes! Your stream always makes my day better &lt;3"</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="demo-controls" id="demoControls">
-    <button onclick="triggerAlert(0)">Test: Media</button>
-    <button onclick="triggerAlert(1)">Test: Text</button>
-    <button onclick="triggerAlert(2)">Test: Voice</button>
+  <!-- CONTROLS -->
+  <div class="preview-controls">
+    <button onclick="replayAlert()">↻ Replay</button>
+    <button onclick="toggleMedia()">Toggle Media</button>
+    <button onclick="cycleData()">Next Data</button>
   </div>
 
   <script>
-    // ============================================================
-    // MOCK DATA (Simulating HyperChat Payload)
-    // ============================================================
-    const mockDonations = [
-      { 
-        name: 'SniperKing', 
-        amount: 1500, 
-        currency: 'INR', 
-        message: 'Absolutely love the energy today! Keep dominating.', 
-        media_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400',
-        type: 'MEDIA'
-      },
-      { 
-        name: 'LatifaFan_99', 
-        amount: 500, 
-        currency: 'INR', 
-        message: 'Best streamer on the platform, hands down. Chicken dinner!', 
-        media_url: null,
-        type: 'TEXT'
-      },
-      { 
-        name: 'BGMI_Pro', 
-        amount: 2000, 
-        currency: 'INR', 
-        message: 'Voice message test', 
-        media_url: null,
-        type: 'VOICE'
-      }
+    const donations = [
+      { name: 'Aria Moonwhisper', amount: 5000, currency: 'INR', message: 'Thank you for the cozy vibes! Your stream always makes my day better <3', badge: 'TEXT' },
+      { name: 'StarlightGamer', amount: 500, currency: 'INR', message: 'GG! That clutch was insane 🔥', badge: 'VOICE' },
+      { name: 'Luna', amount: 100, currency: 'USD', message: '', badge: 'TEXT' },
+      { name: 'TwilightFox', amount: 2500, currency: 'INR', message: 'Sending love from Japan! 🌸', badge: 'MEDIA' },
+      { name: 'VelvetDreamer', amount: 10000, currency: 'INR', message: 'You deserve this! Keep being amazing', badge: 'SOUND' },
     ];
-    
-    let currentDonation = mockDonations[0];
-    let masterTimeline = null;
-    let countInterval = null;
 
-    // ============================================================
-    // RENDER SCENE
-    // ============================================================
-    function render(donation) {
-      const symbol = { INR: '₹', USD: '$', EUR: '€', GBP: '£' }[donation.currency || 'INR'] || '₹';
-      
-      const mediaHtml = donation.media_url ? `
-        <div class="mvp-media">
-          <div class="mvp-media-frame">
-            <img src="${donation.media_url}" alt="donation media" />
-          </div>
-        </div>
-      ` : '';
+    let currentIndex = 0;
+    let mediaVisible = false;
 
-      return `
-        <div class="mvp-card">
-          <div class="mvp-sweep"></div>
-          
-          <div class="rank-badge">
-            <!-- Premium Star/Crown Icon -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
-          </div>
-          
-          <div class="mvp-content">
-            <div class="mvp-row">
-              <span class="mvp-label reveal-up">Supporter</span>
-              <span class="mvp-name reveal-up">${donation.name}</span>
-            </div>
-            
-            <div class="mvp-row">
-              <span class="mvp-label reveal-up">Reward</span>
-              <span class="mvp-amount reveal-up" id="amountDisplay">${symbol}0</span>
-              <span class="mvp-type-badge reveal-up">${donation.type}</span>
-            </div>
-            
-            ${donation.message ? `<div class="mvp-message reveal-up">"${donation.message}"</div>` : ''}
-          </div>
-        </div>
-        ${mediaHtml}
-      `;
+    const symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+
+    function fmt(d) {
+      const sym = symbols[d.currency] || '₹';
+      return `${sym}${d.amount.toLocaleString('en-IN')}`;
     }
 
-    // ============================================================
-    // GSAP AAA MICRO-CINEMATIC CHOREOGRAPHY
-    // ============================================================
-    function showAlert(donation) {
-      if (masterTimeline) masterTimeline.kill();
-      clearInterval(countInterval);
-      
-      const wrapper = document.getElementById('mvpWrapper');
-      wrapper.innerHTML = render(donation);
+    function replayAlert() {
+      const wrap = document.getElementById('alertWrap');
+      wrap.classList.remove('entering');
+      void wrap.offsetWidth; // force reflow
+      wrap.classList.add('entering');
+    }
 
-      masterTimeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-      const targetAmount = donation.amount;
-      const symbol = { INR: '₹', USD: '$', EUR: '€', GBP: '£' }[donation.currency || 'INR'] || '₹';
+    function toggleMedia() {
+      mediaVisible = !mediaVisible;
+      let mediaEl = document.querySelector('.la-media');
 
-      // 0.00s: Wrapper appears
-      gsap.set(wrapper, { opacity: 1 });
-
-      // 0.00s: Main Card slides in with premium elastic overshoot
-      masterTimeline.fromTo(".mvp-card", 
-        { x: -60, opacity: 0, scale: 0.95 },
-        { x: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.1)" }
-      );
-
-      // 0.15s: Rank badge pops in with a slight bounce
-      masterTimeline.fromTo(".rank-badge", 
-        { scale: 0.5, opacity: 0, rotation: -15 },
-        { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.4)" }, "-=0.5"
-      );
-
-      // 0.20s: Text elements stagger up rapidly for instant readability
-      masterTimeline.to(".reveal-up", { 
-        y: 0, 
-        opacity: 1, 
-        duration: 0.4, 
-        stagger: 0.05,
-        ease: "power2.out"
-      }, "-=0.4");
-
-      // 0.30s: Holographic light sweep across the metallic surface
-      masterTimeline.to(".mvp-sweep", { 
-        x: "100%", 
-        duration: 0.9, 
-        ease: "power1.inOut" 
-      }, "-=0.3");
-
-      // 0.40s: Amount Count-Up (runs concurrently, feels like score tallying)
-      const startTime = performance.now();
-      countInterval = setInterval(() => {
-        const elapsed = performance.now() - startTime;
-        const progress = Math.min(elapsed / 800, 1); // Fast 0.8s count
-        const ease = 1 - Math.pow(1 - progress, 3); // Ease out cubic
-        const current = Math.floor(ease * targetAmount);
-        const el = document.getElementById('amountDisplay');
-        if (el) el.textContent = `${symbol}${current.toLocaleString('en-IN')}`;
-        
-        if (progress >= 1) {
-          clearInterval(countInterval);
-          if (el) el.textContent = `${symbol}${targetAmount.toLocaleString('en-IN')}`;
+      if (mediaVisible) {
+        if (!mediaEl) {
+          mediaEl = document.createElement('div');
+          mediaEl.className = 'la-media';
+          mediaEl.innerHTML = '<img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=225&fit=crop" alt="media" />';
+          document.querySelector('.la-wrap').appendChild(mediaEl);
         }
-      }, 16);
+        mediaEl.style.display = 'block';
+        setTimeout(() => mediaEl.classList.add('entering'), 10);
+      } else {
+        if (mediaEl) mediaEl.style.display = 'none';
+      }
+    }
 
-      // 0.60s: Media panel expands downward (if exists)
-      if (document.querySelector('.mvp-media')) {
-        masterTimeline.to(".mvp-media", { 
-          height: "160px", 
-          opacity: 1, 
-          duration: 0.5, 
-          ease: "power3.out" 
-        }, "-=0.2");
+    function cycleData() {
+      currentIndex = (currentIndex + 1) % donations.length;
+      const d = donations[currentIndex];
+
+      document.querySelector('.la-name').textContent = d.name;
+      document.querySelector('.la-amount').textContent = fmt(d);
+      document.querySelector('.la-badge').textContent = d.badge;
+
+      const msgEl = document.querySelector('.la-message');
+      if (d.message) {
+        msgEl.textContent = `"${d.message}"`;
+        msgEl.style.display = 'block';
+      } else {
+        msgEl.style.display = 'none';
       }
 
-      // 1.50s: Idle state - subtle, continuous shimmer on the rarity trim
-      // (Handled by CSS animation, but we can add a gentle float to the whole wrapper)
-      masterTimeline.to(".mvp-wrapper", { 
-        y: -3, 
-        duration: 3, 
-        yoyo: true, 
-        repeat: -1, 
-        ease: "sine.inOut" 
-      }, 1.5);
+      replayAlert();
     }
-
-    function hideAlert() {
-      const wrapper = document.getElementById('mvpWrapper');
-      if (!wrapper.innerHTML) return;
-      
-      if (masterTimeline) masterTimeline.kill();
-      clearInterval(countInterval);
-
-      const exitTl = gsap.timeline({
-        onComplete: () => {
-          wrapper.innerHTML = '';
-          gsap.set(wrapper, { opacity: 0 });
-        }
-      });
-
-      // Fast, clean exit (reverse of entrance, but faster)
-      exitTl
-        .to(".mvp-media", { height: 0, opacity: 0, duration: 0.3 }, 0)
-        .to(".reveal-up", { y: -10, opacity: 0, duration: 0.3, stagger: 0.02 }, 0.1)
-        .to(".mvp-card", { 
-          x: 30, 
-          opacity: 0, 
-          scale: 0.95, 
-          duration: 0.4, 
-          ease: "power2.in" 
-        }, 0.2);
-    }
-
-    function triggerAlert(index) {
-      currentDonation = mockDonations[index];
-      hideAlert();
-      setTimeout(() => showAlert(currentDonation), 600);
-    }
-
-    // ============================================================
-    // INIT
-    // ============================================================
-    window.addEventListener('DOMContentLoaded', () => {
-      if (new URLSearchParams(window.location.search).get('demo') === '1') {
-        document.getElementById('demoControls').classList.add('visible');
-      }
-      // Auto-trigger first alert after a brief delay
-      setTimeout(() => showAlert(currentDonation), 500);
-    });
   </script>
 </body>
 </html>
